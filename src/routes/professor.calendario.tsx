@@ -56,8 +56,8 @@ function Calendario() {
             </div>
           ))}
           {hours.map((h) => (
-            <>
-              <div key={h} className="border-r border-b border-border px-3 py-4 text-xs font-mono text-muted-foreground">{h}</div>
+            <div key={h} className="contents">
+              <div className="border-r border-b border-border px-3 py-4 text-xs font-mono text-muted-foreground">{h}</div>
               {days.map((d) => {
                 const cls = classes[`${d}-${h}`];
                 return (
@@ -71,7 +71,7 @@ function Calendario() {
                   </div>
                 );
               })}
-            </>
+            </div>
           ))}
         </div>
       </div>
