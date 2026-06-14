@@ -4,12 +4,12 @@ import type { ReactNode } from "react";
 
 const nav = [
   { to: "/professor", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/professor/alunos", label: "Alunos", icon: Users },
-  { to: "/professor/calendario", label: "Calendário", icon: CalendarDays },
-  { to: "/professor/mensalidades", label: "Mensalidades", icon: DollarSign },
-  { to: "/professor/graduacoes", label: "Graduações", icon: Award },
-  { to: "/professor/campeonatos", label: "Campeonatos", icon: Trophy },
-  { to: "/professor/fotos", label: "Foto do Dia", icon: Camera },
+  { to: "/professor/alunos", label: "Alunos", icon: Users, exact: false },
+  { to: "/professor/calendario", label: "Calendário", icon: CalendarDays, exact: false },
+  { to: "/professor/mensalidades", label: "Mensalidades", icon: DollarSign, exact: false },
+  { to: "/professor/graduacoes", label: "Graduações", icon: Award, exact: false },
+  { to: "/professor/campeonatos", label: "Campeonatos", icon: Trophy, exact: false },
+  { to: "/professor/fotos", label: "Foto do Dia", icon: Camera, exact: false },
 ] as const;
 
 export function ProfessorShell({ title, children, actions }: { title: string; children: ReactNode; actions?: ReactNode }) {
