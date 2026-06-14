@@ -84,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Plataforma completa para academias de Jiu-Jitsu: alunos, mensalidades, graduações, presença por IA e campeonatos em um só lugar.",
       },
       { name: "author", content: "TatameOS" },
-      { property: "og:title", content: "TatameOS — Gestão para academias de Jiu-Jitsu" },
+      { property: "og:title", content: "TatameOS — Gestão profissional para academias de Jiu-Jitsu" },
       {
         property: "og:description",
         content:
@@ -93,6 +93,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@TatameOS" },
+      { name: "twitter:title", content: "TatameOS — Gestão profissional para academias de Jiu-Jitsu" },
+      { name: "description", content: "Jiu-Jitsu Hub is an online platform for managing Jiu-Jitsu academies, centralizing student, class, graduation, payment, and tournament administration." },
+      { property: "og:description", content: "Jiu-Jitsu Hub is an online platform for managing Jiu-Jitsu academies, centralizing student, class, graduation, payment, and tournament administration." },
+      { name: "twitter:description", content: "Jiu-Jitsu Hub is an online platform for managing Jiu-Jitsu academies, centralizing student, class, graduation, payment, and tournament administration." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ed836740-8c8b-4b92-b4dd-92be92112b87/id-preview-4d467a51--8b131bdb-78f9-4f8f-bed1-e00bc51c4dcd.lovable.app-1781402046487.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ed836740-8c8b-4b92-b4dd-92be92112b87/id-preview-4d467a51--8b131bdb-78f9-4f8f-bed1-e00bc51c4dcd.lovable.app-1781402046487.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
