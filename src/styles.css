@@ -19,15 +19,15 @@
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #0a0a0b;
-  --brand: #0a0a0b;
-  --brand-foreground: #ffffff;
-  --surface: #f6f6f7;
-  --surface-2: #eeeef0;
-  --border: rgba(10, 10, 11, 0.1);
-  --muted: rgba(10, 10, 11, 0.04);
-  --muted-foreground: rgba(10, 10, 11, 0.55);
+  --background: #0a0a0b;
+  --foreground: #ffffff;
+  --brand: #ccff00;
+  --brand-foreground: #0a0a0b;
+  --surface: #161618;
+  --surface-2: #1f1f22;
+  --border: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 255, 255, 0.04);
+  --muted-foreground: rgba(255, 255, 255, 0.5);
 }
 
 .dark {
