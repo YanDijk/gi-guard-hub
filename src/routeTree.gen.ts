@@ -9,38 +9,164 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfessorRouteImport } from './routes/professor'
+import { Route as AlunoRouteImport } from './routes/aluno'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfessorIndexRouteImport } from './routes/professor.index'
+import { Route as ProfessorMensalidadesRouteImport } from './routes/professor.mensalidades'
+import { Route as ProfessorGraduacoesRouteImport } from './routes/professor.graduacoes'
+import { Route as ProfessorFotosRouteImport } from './routes/professor.fotos'
+import { Route as ProfessorCampeonatosRouteImport } from './routes/professor.campeonatos'
+import { Route as ProfessorCalendarioRouteImport } from './routes/professor.calendario'
+import { Route as ProfessorAlunosRouteImport } from './routes/professor.alunos'
 
+const ProfessorRoute = ProfessorRouteImport.update({
+  id: '/professor',
+  path: '/professor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlunoRoute = AlunoRouteImport.update({
+  id: '/aluno',
+  path: '/aluno',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfessorIndexRoute = ProfessorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProfessorRoute,
+} as any)
+const ProfessorMensalidadesRoute = ProfessorMensalidadesRouteImport.update({
+  id: '/mensalidades',
+  path: '/mensalidades',
+  getParentRoute: () => ProfessorRoute,
+} as any)
+const ProfessorGraduacoesRoute = ProfessorGraduacoesRouteImport.update({
+  id: '/graduacoes',
+  path: '/graduacoes',
+  getParentRoute: () => ProfessorRoute,
+} as any)
+const ProfessorFotosRoute = ProfessorFotosRouteImport.update({
+  id: '/fotos',
+  path: '/fotos',
+  getParentRoute: () => ProfessorRoute,
+} as any)
+const ProfessorCampeonatosRoute = ProfessorCampeonatosRouteImport.update({
+  id: '/campeonatos',
+  path: '/campeonatos',
+  getParentRoute: () => ProfessorRoute,
+} as any)
+const ProfessorCalendarioRoute = ProfessorCalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => ProfessorRoute,
+} as any)
+const ProfessorAlunosRoute = ProfessorAlunosRouteImport.update({
+  id: '/alunos',
+  path: '/alunos',
+  getParentRoute: () => ProfessorRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aluno': typeof AlunoRoute
+  '/professor': typeof ProfessorRouteWithChildren
+  '/professor/alunos': typeof ProfessorAlunosRoute
+  '/professor/calendario': typeof ProfessorCalendarioRoute
+  '/professor/campeonatos': typeof ProfessorCampeonatosRoute
+  '/professor/fotos': typeof ProfessorFotosRoute
+  '/professor/graduacoes': typeof ProfessorGraduacoesRoute
+  '/professor/mensalidades': typeof ProfessorMensalidadesRoute
+  '/professor/': typeof ProfessorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aluno': typeof AlunoRoute
+  '/professor/alunos': typeof ProfessorAlunosRoute
+  '/professor/calendario': typeof ProfessorCalendarioRoute
+  '/professor/campeonatos': typeof ProfessorCampeonatosRoute
+  '/professor/fotos': typeof ProfessorFotosRoute
+  '/professor/graduacoes': typeof ProfessorGraduacoesRoute
+  '/professor/mensalidades': typeof ProfessorMensalidadesRoute
+  '/professor': typeof ProfessorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/aluno': typeof AlunoRoute
+  '/professor': typeof ProfessorRouteWithChildren
+  '/professor/alunos': typeof ProfessorAlunosRoute
+  '/professor/calendario': typeof ProfessorCalendarioRoute
+  '/professor/campeonatos': typeof ProfessorCampeonatosRoute
+  '/professor/fotos': typeof ProfessorFotosRoute
+  '/professor/graduacoes': typeof ProfessorGraduacoesRoute
+  '/professor/mensalidades': typeof ProfessorMensalidadesRoute
+  '/professor/': typeof ProfessorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/aluno'
+    | '/professor'
+    | '/professor/alunos'
+    | '/professor/calendario'
+    | '/professor/campeonatos'
+    | '/professor/fotos'
+    | '/professor/graduacoes'
+    | '/professor/mensalidades'
+    | '/professor/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/aluno'
+    | '/professor/alunos'
+    | '/professor/calendario'
+    | '/professor/campeonatos'
+    | '/professor/fotos'
+    | '/professor/graduacoes'
+    | '/professor/mensalidades'
+    | '/professor'
+  id:
+    | '__root__'
+    | '/'
+    | '/aluno'
+    | '/professor'
+    | '/professor/alunos'
+    | '/professor/calendario'
+    | '/professor/campeonatos'
+    | '/professor/fotos'
+    | '/professor/graduacoes'
+    | '/professor/mensalidades'
+    | '/professor/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlunoRoute: typeof AlunoRoute
+  ProfessorRoute: typeof ProfessorRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/professor': {
+      id: '/professor'
+      path: '/professor'
+      fullPath: '/professor'
+      preLoaderRoute: typeof ProfessorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aluno': {
+      id: '/aluno'
+      path: '/aluno'
+      fullPath: '/aluno'
+      preLoaderRoute: typeof AlunoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +174,86 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/professor/': {
+      id: '/professor/'
+      path: '/'
+      fullPath: '/professor/'
+      preLoaderRoute: typeof ProfessorIndexRouteImport
+      parentRoute: typeof ProfessorRoute
+    }
+    '/professor/mensalidades': {
+      id: '/professor/mensalidades'
+      path: '/mensalidades'
+      fullPath: '/professor/mensalidades'
+      preLoaderRoute: typeof ProfessorMensalidadesRouteImport
+      parentRoute: typeof ProfessorRoute
+    }
+    '/professor/graduacoes': {
+      id: '/professor/graduacoes'
+      path: '/graduacoes'
+      fullPath: '/professor/graduacoes'
+      preLoaderRoute: typeof ProfessorGraduacoesRouteImport
+      parentRoute: typeof ProfessorRoute
+    }
+    '/professor/fotos': {
+      id: '/professor/fotos'
+      path: '/fotos'
+      fullPath: '/professor/fotos'
+      preLoaderRoute: typeof ProfessorFotosRouteImport
+      parentRoute: typeof ProfessorRoute
+    }
+    '/professor/campeonatos': {
+      id: '/professor/campeonatos'
+      path: '/campeonatos'
+      fullPath: '/professor/campeonatos'
+      preLoaderRoute: typeof ProfessorCampeonatosRouteImport
+      parentRoute: typeof ProfessorRoute
+    }
+    '/professor/calendario': {
+      id: '/professor/calendario'
+      path: '/calendario'
+      fullPath: '/professor/calendario'
+      preLoaderRoute: typeof ProfessorCalendarioRouteImport
+      parentRoute: typeof ProfessorRoute
+    }
+    '/professor/alunos': {
+      id: '/professor/alunos'
+      path: '/alunos'
+      fullPath: '/professor/alunos'
+      preLoaderRoute: typeof ProfessorAlunosRouteImport
+      parentRoute: typeof ProfessorRoute
+    }
   }
 }
 
+interface ProfessorRouteChildren {
+  ProfessorAlunosRoute: typeof ProfessorAlunosRoute
+  ProfessorCalendarioRoute: typeof ProfessorCalendarioRoute
+  ProfessorCampeonatosRoute: typeof ProfessorCampeonatosRoute
+  ProfessorFotosRoute: typeof ProfessorFotosRoute
+  ProfessorGraduacoesRoute: typeof ProfessorGraduacoesRoute
+  ProfessorMensalidadesRoute: typeof ProfessorMensalidadesRoute
+  ProfessorIndexRoute: typeof ProfessorIndexRoute
+}
+
+const ProfessorRouteChildren: ProfessorRouteChildren = {
+  ProfessorAlunosRoute: ProfessorAlunosRoute,
+  ProfessorCalendarioRoute: ProfessorCalendarioRoute,
+  ProfessorCampeonatosRoute: ProfessorCampeonatosRoute,
+  ProfessorFotosRoute: ProfessorFotosRoute,
+  ProfessorGraduacoesRoute: ProfessorGraduacoesRoute,
+  ProfessorMensalidadesRoute: ProfessorMensalidadesRoute,
+  ProfessorIndexRoute: ProfessorIndexRoute,
+}
+
+const ProfessorRouteWithChildren = ProfessorRoute._addFileChildren(
+  ProfessorRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlunoRoute: AlunoRoute,
+  ProfessorRoute: ProfessorRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
