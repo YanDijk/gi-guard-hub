@@ -4,7 +4,7 @@ import { BeltBadge } from "@/components/BeltBadge";
 import { students, graduations } from "@/lib/mock-data";
 import { Award, Plus } from "lucide-react";
 
-export const Route = createFileRoute("/professor/graduacoes")({
+export const Route = createFileRoute("/_authenticated/professor/graduacoes")({
   head: () => ({ meta: [{ title: "Graduações — TatameOS" }] }),
   component: Graduacoes,
 });

@@ -42,15 +42,15 @@ function LandingPage() {
           <a href="#planos" className="hover:text-brand transition-colors">
             Planos
           </a>
-          <a href="/aluno" className="hover:text-brand transition-colors">
+          <a href="/auth" className="hover:text-brand transition-colors">
             Área do Aluno
           </a>
         </div>
         <a
-          href="/professor"
+          href="/auth"
           className="bg-brand text-brand-foreground px-5 py-2 text-xs font-display uppercase tracking-wider hover:bg-white transition-all"
         >
-          Entrar como Professor
+          Entrar
         </a>
       </nav>
 

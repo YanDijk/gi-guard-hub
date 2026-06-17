@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ProfessorShell } from "@/components/ProfessorShell";
 import { Upload } from "lucide-react";
 
-export const Route = createFileRoute("/professor/fotos")({
+export const Route = createFileRoute("/_authenticated/professor/fotos")({
   head: () => ({ meta: [{ title: "Foto do Dia — TatameOS" }] }),
   component: Fotos,
 });

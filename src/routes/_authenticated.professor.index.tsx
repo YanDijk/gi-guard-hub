@@ -4,7 +4,7 @@ import { BeltBadge } from "@/components/BeltBadge";
 import { students, todayClasses, graduations, tournaments } from "@/lib/mock-data";
 import { TrendingUp, Users, DollarSign, Calendar, ArrowUpRight, Scan } from "lucide-react";
 
-export const Route = createFileRoute("/professor/")({
+export const Route = createFileRoute("/_authenticated/professor/")({
   head: () => ({ meta: [{ title: "Dashboard — TatameOS" }] }),
   component: Dashboard,
 });

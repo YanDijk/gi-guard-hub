@@ -4,7 +4,7 @@ import { BeltBadge } from "@/components/BeltBadge";
 import { currentStudent, todayClasses, tournaments, graduations } from "@/lib/mock-data";
 import type { ReactNode } from "react";
 
-export const Route = createFileRoute("/aluno")({
+export const Route = createFileRoute("/_authenticated/aluno")({
   head: () => ({ meta: [{ title: "Área do Aluno — TatameOS" }] }),
   component: Aluno,
 });
