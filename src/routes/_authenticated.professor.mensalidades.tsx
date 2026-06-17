@@ -3,7 +3,7 @@ import { ProfessorShell } from "@/components/ProfessorShell";
 import { students } from "@/lib/mock-data";
 import { Send, DollarSign, AlertCircle, CheckCircle2 } from "lucide-react";
 
-export const Route = createFileRoute("/professor/mensalidades")({
+export const Route = createFileRoute("/_authenticated/professor/mensalidades")({
   head: () => ({ meta: [{ title: "Mensalidades — TatameOS" }] }),
   component: Mensalidades,
 });

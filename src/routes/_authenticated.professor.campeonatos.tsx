@@ -3,7 +3,7 @@ import { ProfessorShell } from "@/components/ProfessorShell";
 import { tournaments, students } from "@/lib/mock-data";
 import { Trophy, MapPin, Calendar, Plus, Users } from "lucide-react";
 
-export const Route = createFileRoute("/professor/campeonatos")({
+export const Route = createFileRoute("/_authenticated/professor/campeonatos")({
   head: () => ({ meta: [{ title: "Campeonatos — TatameOS" }] }),
   component: Campeonatos,
 });

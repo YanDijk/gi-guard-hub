@@ -3,7 +3,7 @@ import { ProfessorShell } from "@/components/ProfessorShell";
 import { todayClasses } from "@/lib/mock-data";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 
-export const Route = createFileRoute("/professor/calendario")({
+export const Route = createFileRoute("/_authenticated/professor/calendario")({
   head: () => ({ meta: [{ title: "Calendário — TatameOS" }] }),
   component: Calendario,
 });
