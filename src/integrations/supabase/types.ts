@@ -14,42 +14,307 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendances: {
+        Row: {
+          attended_on: string
+          class_id: string | null
+          created_at: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          attended_on?: string
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          attended_on?: string
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendances_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendances_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          capacity: number
+          created_at: string
+          day_of_week: number
+          duration_min: number
+          id: string
+          level: string
+          name: string
+          start_time: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          day_of_week: number
+          duration_min?: number
+          id?: string
+          level?: string
+          name: string
+          start_time: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          day_of_week?: number
+          duration_min?: number
+          id?: string
+          level?: string
+          name?: string
+          start_time?: string
+        }
+        Relationships: []
+      }
+      graduations: {
+        Row: {
+          ceremony_date: string
+          created_at: string
+          from_belt: Database["public"]["Enums"]["belt"]
+          from_stripes: number
+          id: string
+          notes: string | null
+          student_id: string
+          to_belt: Database["public"]["Enums"]["belt"]
+          to_stripes: number
+        }
+        Insert: {
+          ceremony_date: string
+          created_at?: string
+          from_belt: Database["public"]["Enums"]["belt"]
+          from_stripes?: number
+          id?: string
+          notes?: string | null
+          student_id: string
+          to_belt: Database["public"]["Enums"]["belt"]
+          to_stripes?: number
+        }
+        Update: {
+          ceremony_date?: string
+          created_at?: string
+          from_belt?: Database["public"]["Enums"]["belt"]
+          from_stripes?: number
+          id?: string
+          notes?: string | null
+          student_id?: string
+          to_belt?: Database["public"]["Enums"]["belt"]
+          to_stripes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "graduations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string
+          id: string
+          method: string | null
+          notes: string | null
+          paid_at: string | null
+          reference_month: string
+          student_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          due_date: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          reference_month: string
+          student_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          reference_month?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          active: boolean
           avatar_url: string | null
           belt: Database["public"]["Enums"]["belt"]
           birth_date: string | null
           created_at: string
+          due_day: number
           full_name: string
           id: string
+          monthly_fee: number
           phone: string | null
           stripes: number
           updated_at: string
           weight_kg: number | null
         }
         Insert: {
+          active?: boolean
           avatar_url?: string | null
           belt?: Database["public"]["Enums"]["belt"]
           birth_date?: string | null
           created_at?: string
+          due_day?: number
           full_name?: string
           id: string
+          monthly_fee?: number
           phone?: string | null
           stripes?: number
           updated_at?: string
           weight_kg?: number | null
         }
         Update: {
+          active?: boolean
           avatar_url?: string | null
           belt?: Database["public"]["Enums"]["belt"]
           birth_date?: string | null
           created_at?: string
+          due_day?: number
           full_name?: string
           id?: string
+          monthly_fee?: number
           phone?: string | null
           stripes?: number
           updated_at?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      tournament_signups: {
+        Row: {
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["signup_status"]
+          student_id: string
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["signup_status"]
+          student_id: string
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["signup_status"]
+          student_id?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_signups_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_signups_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          city: string | null
+          created_at: string
+          event_date: string
+          id: string
+          name: string
+          notes: string | null
+          registration_url: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          event_date: string
+          id?: string
+          name: string
+          notes?: string | null
+          registration_url?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          event_date?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          registration_url?: string | null
+        }
+        Relationships: []
+      }
+      training_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          photo_path: string
+          taken_on: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          photo_path: string
+          taken_on?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          photo_path?: string
+          taken_on?: string
+          uploaded_by?: string | null
         }
         Relationships: []
       }
@@ -79,6 +344,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_professor: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -97,6 +363,7 @@ export type Database = {
         | "preta"
         | "coral"
         | "vermelha"
+      signup_status: "recomendado" | "convocado" | "inscrito"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -226,6 +493,7 @@ export const Constants = {
     Enums: {
       app_role: ["professor", "aluno"],
       belt: ["branca", "azul", "roxa", "marrom", "preta", "coral", "vermelha"],
+      signup_status: ["recomendado", "convocado", "inscrito"],
     },
   },
 } as const
