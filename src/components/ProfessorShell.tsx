@@ -1,6 +1,19 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, CalendarDays, DollarSign, Award, Trophy, Camera, LogOut, Bell, Search } from "lucide-react";
+import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  DollarSign,
+  Award,
+  Trophy,
+  Camera,
+  LogOut,
+} from "lucide-react";
 import type { ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { BeltBadge } from "@/components/BeltBadge";
+import { toast } from "sonner";
 
 const nav = [
   { to: "/professor", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -12,8 +25,24 @@ const nav = [
   { to: "/professor/fotos", label: "Foto do Dia", icon: Camera, exact: false },
 ] as const;
 
-export function ProfessorShell({ title, children, actions }: { title: string; children: ReactNode; actions?: ReactNode }) {
+export function ProfessorShell({
+  title,
+  children,
+  actions,
+}: {
+  title: string;
+  children: ReactNode;
+  actions?: ReactNode;
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const { data: me } = useCurrentUser();
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    toast.success("Sessão encerrada");
+    navigate({ to: "/auth" });
+  }
 
   return (
     <div className="min-h-screen flex bg-background text-foreground font-sans">
@@ -22,7 +51,9 @@ export function ProfessorShell({ title, children, actions }: { title: string; ch
           <Link to="/" className="text-xl font-display tracking-tighter italic block">
             TATAME<span className="text-brand">OS</span>
           </Link>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Área do Professor</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
+            Área do Professor
+          </div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
           {nav.map((item) => {
@@ -33,7 +64,9 @@ export function ProfessorShell({ title, children, actions }: { title: string; ch
                 key={item.to}
                 to={item.to}
                 className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  active ? "bg-brand text-brand-foreground" : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
+                  active
+                    ? "bg-brand text-brand-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
                 }`}
               >
                 <Icon className="size-4" />
@@ -43,7 +76,10 @@ export function ProfessorShell({ title, children, actions }: { title: string; ch
           })}
         </nav>
         <div className="p-3 border-t border-border">
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-surface-2">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-surface-2"
+          >
             <LogOut className="size-4" /> Sair
           </button>
         </div>
@@ -51,28 +87,20 @@ export function ProfessorShell({ title, children, actions }: { title: string; ch
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-border flex items-center justify-between px-8 bg-background/60 backdrop-blur sticky top-0 z-10">
-          <div>
-            <h1 className="text-xl font-display tracking-tight">{title}</h1>
-          </div>
+          <h1 className="text-xl font-display tracking-tight">{title}</h1>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                placeholder="Buscar aluno..."
-                className="h-9 pl-9 pr-3 bg-surface border border-border rounded-md text-sm w-64 focus:outline-none focus:border-brand"
-              />
-            </div>
-            <button className="size-9 rounded-md bg-surface border border-border flex items-center justify-center hover:border-brand">
-              <Bell className="size-4" />
-            </button>
             {actions}
-            <div className="flex items-center gap-2 pl-3 border-l border-border">
-              <img src="https://i.pravatar.cc/64?img=12" className="size-8 rounded-full object-cover" alt="" />
-              <div className="text-xs">
-                <div className="font-semibold">Prof. Marcos</div>
-                <div className="text-muted-foreground">Faixa Preta · 3º grau</div>
+            {me?.profile && (
+              <div className="flex items-center gap-3 pl-3 border-l border-border">
+                <div className="text-right text-xs">
+                  <div className="font-semibold">{me.profile.full_name || me.email}</div>
+                  <div className="text-muted-foreground capitalize">
+                    Faixa {me.profile.belt} · {me.profile.stripes}°
+                  </div>
+                </div>
+                <BeltBadge belt={me.profile.belt} stripes={me.profile.stripes} size="sm" />
               </div>
-            </div>
+            )}
           </div>
         </header>
 
