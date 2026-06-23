@@ -39,7 +39,7 @@ function LandingPage() {
           <a href="#app" className="hover:text-brand transition-colors">
             Dashboard
           </a>
-          <a href="#planos" className="hover:text-brand transition-colors">
+          <a href="/planos" className="hover:text-brand transition-colors">
             Planos
           </a>
           <a href="/auth" className="hover:text-brand transition-colors">
@@ -66,7 +66,7 @@ function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <a
-              href="#cta"
+              href="/planos"
               className="bg-brand text-brand-foreground h-14 px-8 inline-flex items-center font-display uppercase tracking-widest hover:translate-x-1 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_#fff]"
             >
               Começar Agora
@@ -184,7 +184,7 @@ function LandingPage() {
                   <BulletItem>Inscrição em campeonatos internos com um clique.</BulletItem>
                 </ul>
                 <a
-                  href="#cta"
+                  href="/planos"
                   className="inline-block border-2 border-brand text-brand px-8 py-4 font-display uppercase tracking-widest hover:bg-brand hover:text-brand-foreground transition-all"
                 >
                   Ver Demonstração
@@ -218,7 +218,7 @@ function LandingPage() {
               <li>✓ Suporte via Email</li>
             </ul>
             <a
-              href="#cta"
+              href="/planos"
               className="block w-full py-4 border border-white/20 text-white font-display uppercase tracking-widest hover:bg-white hover:text-brand-foreground transition-all text-center"
             >
               Assinar
@@ -241,7 +241,7 @@ function LandingPage() {
               <li>✓ Suporte prioritário 24/7</li>
             </ul>
             <a
-              href="#cta"
+              href="/planos"
               className="block w-full py-4 bg-brand text-brand-foreground font-display uppercase tracking-widest hover:bg-white transition-all text-center"
             >
               Assinar Agora

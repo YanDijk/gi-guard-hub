@@ -9,10 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 import { Route as AuthenticatedProfessorRouteImport } from './routes/_authenticated.professor'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated.onboarding'
 import { Route as AuthenticatedAlunoRouteImport } from './routes/_authenticated.aluno'
 import { Route as AuthenticatedProfessorIndexRouteImport } from './routes/_authenticated.professor.index'
 import { Route as AuthenticatedProfessorMensalidadesRouteImport } from './routes/_authenticated.professor.mensalidades'
@@ -22,6 +25,11 @@ import { Route as AuthenticatedProfessorCampeonatosRouteImport } from './routes/
 import { Route as AuthenticatedProfessorCalendarioRouteImport } from './routes/_authenticated.professor.calendario'
 import { Route as AuthenticatedProfessorAlunosRouteImport } from './routes/_authenticated.professor.alunos'
 
+const PlanosRoute = PlanosRouteImport.update({
+  id: '/planos',
+  path: '/planos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -36,9 +44,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConviteTokenRoute = ConviteTokenRouteImport.update({
+  id: '/convite/$token',
+  path: '/convite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedProfessorRoute = AuthenticatedProfessorRouteImport.update({
   id: '/professor',
   path: '/professor',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAlunoRoute = AuthenticatedAlunoRouteImport.update({
@@ -92,8 +110,11 @@ const AuthenticatedProfessorAlunosRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/planos': typeof PlanosRoute
   '/aluno': typeof AuthenticatedAlunoRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/professor': typeof AuthenticatedProfessorRouteWithChildren
+  '/convite/$token': typeof ConviteTokenRoute
   '/professor/alunos': typeof AuthenticatedProfessorAlunosRoute
   '/professor/calendario': typeof AuthenticatedProfessorCalendarioRoute
   '/professor/campeonatos': typeof AuthenticatedProfessorCampeonatosRoute
@@ -105,7 +126,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/planos': typeof PlanosRoute
   '/aluno': typeof AuthenticatedAlunoRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/professor/alunos': typeof AuthenticatedProfessorAlunosRoute
   '/professor/calendario': typeof AuthenticatedProfessorCalendarioRoute
   '/professor/campeonatos': typeof AuthenticatedProfessorCampeonatosRoute
@@ -119,8 +143,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/planos': typeof PlanosRoute
   '/_authenticated/aluno': typeof AuthenticatedAlunoRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/professor': typeof AuthenticatedProfessorRouteWithChildren
+  '/convite/$token': typeof ConviteTokenRoute
   '/_authenticated/professor/alunos': typeof AuthenticatedProfessorAlunosRoute
   '/_authenticated/professor/calendario': typeof AuthenticatedProfessorCalendarioRoute
   '/_authenticated/professor/campeonatos': typeof AuthenticatedProfessorCampeonatosRoute
@@ -134,8 +161,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/planos'
     | '/aluno'
+    | '/onboarding'
     | '/professor'
+    | '/convite/$token'
     | '/professor/alunos'
     | '/professor/calendario'
     | '/professor/campeonatos'
@@ -147,7 +177,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/planos'
     | '/aluno'
+    | '/onboarding'
+    | '/convite/$token'
     | '/professor/alunos'
     | '/professor/calendario'
     | '/professor/campeonatos'
@@ -160,8 +193,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/planos'
     | '/_authenticated/aluno'
+    | '/_authenticated/onboarding'
     | '/_authenticated/professor'
+    | '/convite/$token'
     | '/_authenticated/professor/alunos'
     | '/_authenticated/professor/calendario'
     | '/_authenticated/professor/campeonatos'
@@ -175,10 +211,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PlanosRoute: typeof PlanosRoute
+  ConviteTokenRoute: typeof ConviteTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/planos': {
+      id: '/planos'
+      path: '/planos'
+      fullPath: '/planos'
+      preLoaderRoute: typeof PlanosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -200,11 +245,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/convite/$token': {
+      id: '/convite/$token'
+      path: '/convite/$token'
+      fullPath: '/convite/$token'
+      preLoaderRoute: typeof ConviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/professor': {
       id: '/_authenticated/professor'
       path: '/professor'
       fullPath: '/professor'
       preLoaderRoute: typeof AuthenticatedProfessorRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/aluno': {
@@ -298,11 +357,13 @@ const AuthenticatedProfessorRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAlunoRoute: typeof AuthenticatedAlunoRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfessorRoute: typeof AuthenticatedProfessorRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAlunoRoute: AuthenticatedAlunoRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfessorRoute: AuthenticatedProfessorRouteWithChildren,
 }
 
@@ -314,6 +375,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  PlanosRoute: PlanosRoute,
+  ConviteTokenRoute: ConviteTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

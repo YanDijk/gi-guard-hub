@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bell, CheckCircle2, Trophy, LogOut, Loader2, Camera } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { Bell, CheckCircle2, Trophy, LogOut, Loader2, Camera, Clock } from "lucide-react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useMyMembership } from "@/hooks/use-current-academy";
 import { BeltBadge } from "@/components/BeltBadge";
 import { Avatar } from "@/components/Avatar";
 import { DAY_LABELS, formatCurrency } from "@/lib/jiujitsu";
@@ -20,7 +21,15 @@ function Aluno() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: me, isLoading: meLoading } = useCurrentUser();
+  const { data: membership, isLoading: memLoading } = useMyMembership();
   const userId = me?.userId;
+
+  useEffect(() => {
+    if (meLoading || memLoading) return;
+    if (me && !me.isProfessor && !membership) {
+      navigate({ to: "/onboarding" });
+    }
+  }, [me, meLoading, membership, memLoading, navigate]);
 
   const today = new Date();
   const todayDow = today.getDay();
@@ -180,10 +189,36 @@ function Aluno() {
     navigate({ to: "/auth", replace: true });
   }
 
-  if (meLoading || !me?.profile) {
+
+  if (meLoading || memLoading || !me?.profile) {
     return (
       <div className="min-h-screen grid place-items-center bg-background text-muted-foreground">
         <Loader2 className="size-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (membership && membership.status !== "active") {
+    const acad = (membership as { academies?: { name?: string } }).academies;
+    return (
+      <div className="min-h-screen grid place-items-center bg-background text-foreground px-6">
+        <div className="max-w-md w-full bg-surface border border-border rounded-lg p-8 text-center">
+          <Clock className="size-10 text-brand mx-auto mb-4" />
+          <h1 className="font-display text-2xl uppercase mb-2">
+            {membership.status === "pending" ? "Aguardando aprovação" : "Solicitação recusada"}
+          </h1>
+          <p className="text-sm text-muted-foreground mb-6">
+            {membership.status === "pending"
+              ? `Sua solicitação para entrar em ${acad?.name ?? "academia"} foi enviada. Avise seu professor para aprovar.`
+              : `Sua solicitação para ${acad?.name ?? "esta academia"} foi recusada. Fale com seu professor.`}
+          </p>
+          <button
+            onClick={handleLogout}
+            className="w-full h-11 border border-border text-muted-foreground hover:text-foreground font-display uppercase tracking-widest text-xs"
+          >
+            Sair
+          </button>
+        </div>
       </div>
     );
   }
