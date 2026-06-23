@@ -189,10 +189,40 @@ function Aluno() {
     navigate({ to: "/auth", replace: true });
   }
 
-  if (meLoading || !me?.profile) {
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
+  if (meLoading || memLoading || !me?.profile) {
     return (
       <div className="min-h-screen grid place-items-center bg-background text-muted-foreground">
         <Loader2 className="size-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (membership && membership.status !== "active") {
+    const acad = (membership as { academies?: { name?: string } }).academies;
+    return (
+      <div className="min-h-screen grid place-items-center bg-background text-foreground px-6">
+        <div className="max-w-md w-full bg-surface border border-border rounded-lg p-8 text-center">
+          <Clock className="size-10 text-brand mx-auto mb-4" />
+          <h1 className="font-display text-2xl uppercase mb-2">
+            {membership.status === "pending" ? "Aguardando aprovação" : "Solicitação recusada"}
+          </h1>
+          <p className="text-sm text-muted-foreground mb-6">
+            {membership.status === "pending"
+              ? `Sua solicitação para entrar em ${acad?.name ?? "academia"} foi enviada. Avise seu professor para aprovar.`
+              : `Sua solicitação para ${acad?.name ?? "esta academia"} foi recusada. Fale com seu professor.`}
+          </p>
+          <button
+            onClick={handleSignOut}
+            className="w-full h-11 border border-border text-muted-foreground hover:text-foreground font-display uppercase tracking-widest text-xs"
+          >
+            Sair
+          </button>
+        </div>
       </div>
     );
   }
