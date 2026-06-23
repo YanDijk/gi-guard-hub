@@ -1,135 +1,379 @@
-import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import { Home, Calendar, Trophy, User, Bell, Camera, CheckCircle2, MessageSquare } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Bell, CheckCircle2, Trophy, LogOut, Loader2, Camera } from "lucide-react";
+import { useMemo, type ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { BeltBadge } from "@/components/BeltBadge";
-import { currentStudent, todayClasses, tournaments, graduations } from "@/lib/mock-data";
-import type { ReactNode } from "react";
+import { Avatar } from "@/components/Avatar";
+import { DAY_LABELS, formatCurrency } from "@/lib/jiujitsu";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/aluno")({
   head: () => ({ meta: [{ title: "Área do Aluno — TatameOS" }] }),
   component: Aluno,
 });
 
+const GRAD_TARGET = 16; // presenças em 30 dias
+
 function Aluno() {
-  return (
-    <AlunoShell>
-      <div className="bg-gradient-to-br from-brand/20 via-surface to-surface-2 rounded-2xl p-6 border border-border">
-        <div className="flex items-center gap-4">
-          <img src={currentStudent.avatar} className="size-16 rounded-full object-cover ring-2 ring-brand" alt="" />
-          <div className="flex-1">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">Olá</div>
-            <div className="text-xl font-display">{currentStudent.name}</div>
-            <div className="mt-2"><BeltBadge belt={currentStudent.belt} stripes={currentStudent.stripes} size="lg" /></div>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-3 mt-5">
-          <Stat label="Presenças (30d)" value={currentStudent.attendance30d} />
-          <Stat label="Próximo grau" value="65%" />
-          <Stat label="Sequência" value="12 dias" />
-        </div>
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { data: me, isLoading: meLoading } = useCurrentUser();
+  const userId = me?.userId;
+
+  const today = new Date();
+  const todayDow = today.getDay();
+  const todayIso = today.toISOString().slice(0, 10);
+  const since30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const monthStart = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-01`;
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ["aluno-classes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("classes")
+        .select("*")
+        .order("day_of_week")
+        .order("start_time");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: attendances = [] } = useQuery({
+    enabled: !!userId,
+    queryKey: ["aluno-attendances", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendances")
+        .select("*")
+        .eq("student_id", userId!)
+        .gte("attended_on", since30)
+        .order("attended_on", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: currentPayment } = useQuery({
+    enabled: !!userId,
+    queryKey: ["aluno-payment", userId, monthStart],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("student_id", userId!)
+        .eq("reference_month", monthStart)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: tournaments = [] } = useQuery({
+    queryKey: ["aluno-tournaments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournaments")
+        .select("*")
+        .gte("event_date", todayIso)
+        .order("event_date");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: mySignups = [] } = useQuery({
+    enabled: !!userId,
+    queryKey: ["aluno-signups", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournament_signups")
+        .select("*")
+        .eq("student_id", userId!);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: photos = [] } = useQuery({
+    queryKey: ["aluno-photos"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("training_photos")
+        .select("*")
+        .order("taken_on", { ascending: false })
+        .limit(9);
+      if (error) throw error;
+      if (!data?.length) return [];
+      const { data: signed } = await supabase.storage
+        .from("training-photos")
+        .createSignedUrls(data.map((p) => p.photo_path), 3600);
+      const map = new Map(signed?.map((s) => [s.path, s.signedUrl]) ?? []);
+      return data.map((p) => ({ ...p, url: map.get(p.photo_path) ?? "" }));
+    },
+  });
+
+  const { data: nextGraduation } = useQuery({
+    queryKey: ["aluno-next-grad"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("graduations")
+        .select("ceremony_date")
+        .gte("ceremony_date", todayIso)
+        .order("ceremony_date")
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const todayClasses = useMemo(
+    () => classes.filter((c) => c.day_of_week === todayDow),
+    [classes, todayDow],
+  );
+  const attendedTodayClassIds = useMemo(
+    () => new Set(attendances.filter((a) => a.attended_on === todayIso).map((a) => a.class_id)),
+    [attendances, todayIso],
+  );
+  const signupByTournament = useMemo(
+    () => new Map(mySignups.map((s) => [s.tournament_id, s])),
+    [mySignups],
+  );
+
+  const checkInMutation = useMutation({
+    mutationFn: async (classId: string) => {
+      if (!userId) throw new Error("Sem sessão");
+      const { error } = await supabase.from("attendances").insert({
+        student_id: userId,
+        class_id: classId,
+        attended_on: todayIso,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Presença confirmada");
+      queryClient.invalidateQueries({ queryKey: ["aluno-attendances"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro"),
+  });
+
+  const signupMutation = useMutation({
+    mutationFn: async (tournamentId: string) => {
+      if (!userId) throw new Error("Sem sessão");
+      const { error } = await supabase
+        .from("tournament_signups")
+        .insert({ tournament_id: tournamentId, student_id: userId, status: "interested" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Inscrição registrada");
+      queryClient.invalidateQueries({ queryKey: ["aluno-signups"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro"),
+  });
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
+  if (meLoading || !me?.profile) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background text-muted-foreground">
+        <Loader2 className="size-6 animate-spin" />
       </div>
+    );
+  }
 
-      <Section title="Aula de hoje">
-        <div className="bg-surface border border-border rounded-xl p-5">
+  const profile = me.profile;
+  const attendance30d = attendances.length;
+  const gradProgress = Math.min(100, Math.round((attendance30d / GRAD_TARGET) * 100));
+  const gradRemaining = Math.max(0, GRAD_TARGET - attendance30d);
+
+  const paymentStatus = currentPayment?.paid_at
+    ? "pago"
+    : currentPayment
+      ? new Date(currentPayment.due_date) < today
+        ? "atrasado"
+        : "em aberto"
+      : "sem cobrança";
+
+  return (
+    <div className="min-h-screen bg-background text-foreground font-sans">
+      <div className="max-w-md mx-auto pb-12 px-4 pt-6">
+        <header className="flex items-center justify-between mb-6">
+          <Link to="/" className="text-xl font-display tracking-tighter italic">
+            TATAME<span className="text-brand">OS</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <button className="size-10 rounded-full bg-surface border border-border grid place-items-center relative">
+              <Bell className="size-4" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="size-10 rounded-full bg-surface border border-border grid place-items-center text-muted-foreground hover:text-foreground"
+              aria-label="Sair"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </div>
+        </header>
+
+        <div className="bg-gradient-to-br from-brand/20 via-surface to-surface-2 rounded-2xl p-6 border border-border">
           <div className="flex items-center gap-4">
-            <div className="font-display text-3xl text-brand">{todayClasses[2].time}</div>
+            <Avatar name={profile.full_name || me.email} url={profile.avatar_url} size={64} />
             <div className="flex-1">
-              <div className="font-bold">{todayClasses[2].name}</div>
-              <div className="text-xs text-muted-foreground">{todayClasses[2].confirmed}/{todayClasses[2].capacity} confirmados</div>
-            </div>
-          </div>
-          <button className="w-full h-12 mt-4 bg-brand text-brand-foreground rounded-lg font-bold uppercase tracking-wider flex items-center justify-center gap-2">
-            <CheckCircle2 className="size-5" /> Confirmar presença
-          </button>
-        </div>
-      </Section>
-
-      <Section title="Próximos treinos">
-        <div className="space-y-2">
-          {todayClasses.map((c) => (
-            <div key={c.id} className="flex items-center gap-4 p-3 bg-surface border border-border rounded-lg">
-              <div className="font-display text-lg text-brand w-14">{c.time}</div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold">{c.name}</div>
-                <div className="text-xs text-muted-foreground">{c.level}</div>
-              </div>
-              <button className="size-8 rounded-full bg-surface-2 hover:bg-brand hover:text-brand-foreground flex items-center justify-center transition-colors">
-                <CheckCircle2 className="size-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Sua próxima graduação">
-        <div className="bg-surface border border-border rounded-xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">Faltam</div>
-              <div className="font-display text-2xl">5 presenças</div>
-            </div>
-            <BeltBadge belt={currentStudent.belt} stripes={currentStudent.stripes + 1} size="lg" />
-          </div>
-          <div className="h-2 bg-surface-2 rounded-full overflow-hidden">
-            <div className="h-full bg-brand" style={{ width: "65%" }} />
-          </div>
-          <div className="text-xs text-muted-foreground mt-2">Próxima cerimônia: {new Date(graduations[0].date).toLocaleDateString("pt-BR")}</div>
-        </div>
-      </Section>
-
-      <Section title="Campeonatos · Convocações">
-        <div className="space-y-3">
-          {tournaments.slice(0, 2).map((t) => (
-            <div key={t.id} className="bg-surface border border-border rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <div className="size-10 rounded-lg bg-brand/10 flex items-center justify-center shrink-0">
-                  <Trophy className="size-5 text-brand" />
-                </div>
-                <div className="flex-1">
-                  <div className="font-bold text-sm">{t.name}</div>
-                  <div className="text-xs text-muted-foreground">{t.city} · {new Date(t.date).toLocaleDateString("pt-BR")}</div>
-                </div>
-                <button className="h-8 px-3 bg-brand text-brand-foreground rounded-md text-xs font-bold uppercase tracking-wider">Inscrever</button>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Olá</div>
+              <div className="text-xl font-display">{profile.full_name || me.email}</div>
+              <div className="mt-2">
+                <BeltBadge belt={profile.belt} stripes={profile.stripes} size="lg" />
               </div>
             </div>
-          ))}
+          </div>
+          <div className="grid grid-cols-3 gap-3 mt-5">
+            <Stat label="Presenças 30d" value={attendance30d} />
+            <Stat label="Próximo grau" value={`${gradProgress}%`} />
+            <Stat label="Aulas hoje" value={todayClasses.length} />
+          </div>
         </div>
-      </Section>
 
-      <Section title="Mensalidade">
-        <div className="bg-surface border border-border rounded-xl p-5">
-          <div className="flex items-center justify-between">
+        <Section title="Aulas de hoje">
+          {todayClasses.length === 0 ? (
+            <Empty>Sem aulas hoje ({DAY_LABELS[todayDow]}).</Empty>
+          ) : (
+            <div className="space-y-2">
+              {todayClasses.map((c) => {
+                const done = attendedTodayClassIds.has(c.id);
+                return (
+                  <div key={c.id} className="flex items-center gap-4 p-3 bg-surface border border-border rounded-lg">
+                    <div className="font-display text-lg text-brand w-14">{c.start_time.slice(0, 5)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold truncate">{c.name}</div>
+                      <div className="text-xs text-muted-foreground">{c.level} · {c.duration_min}min</div>
+                    </div>
+                    <button
+                      onClick={() => !done && checkInMutation.mutate(c.id)}
+                      disabled={done || checkInMutation.isPending}
+                      className={`h-9 px-3 rounded-md text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${
+                        done
+                          ? "bg-brand/20 text-brand cursor-default"
+                          : "bg-brand text-brand-foreground hover:bg-brand/90"
+                      }`}
+                    >
+                      <CheckCircle2 className="size-4" />
+                      {done ? "Presente" : "Check-in"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Section>
+
+        <Section title="Próxima graduação">
+          <div className="bg-surface border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                  {gradRemaining > 0 ? "Faltam" : "Pronto!"}
+                </div>
+                <div className="font-display text-2xl">
+                  {gradRemaining > 0 ? `${gradRemaining} presenças` : "Aguarde cerimônia"}
+                </div>
+              </div>
+              <BeltBadge belt={profile.belt} stripes={Math.min(4, profile.stripes + 1)} size="lg" />
+            </div>
+            <div className="h-2 bg-surface-2 rounded-full overflow-hidden">
+              <div className="h-full bg-brand transition-all" style={{ width: `${gradProgress}%` }} />
+            </div>
+            {nextGraduation && (
+              <div className="text-xs text-muted-foreground mt-2">
+                Próxima cerimônia: {new Date(nextGraduation.ceremony_date).toLocaleDateString("pt-BR")}
+              </div>
+            )}
+          </div>
+        </Section>
+
+        <Section title="Mensalidade">
+          <div className="bg-surface border border-border rounded-xl p-5 flex items-center justify-between">
             <div>
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">Junho · 2026</div>
-              <div className="font-display text-2xl">R$ {currentStudent.monthlyFee.toFixed(2)}</div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                {today.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+              </div>
+              <div className="font-display text-2xl">
+                {formatCurrency(currentPayment?.amount ?? profile.monthly_fee ?? 0)}
+              </div>
+              {currentPayment?.due_date && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Vence em {new Date(currentPayment.due_date).toLocaleDateString("pt-BR")}
+                </div>
+              )}
             </div>
-            <span className="text-[10px] uppercase tracking-widest px-2 py-1 rounded bg-brand/10 text-brand">Pago</span>
+            <PaymentBadge status={paymentStatus} />
           </div>
-          <button className="w-full h-10 mt-4 border border-border rounded-md text-xs uppercase tracking-widest hover:border-brand">Ver recibos</button>
-        </div>
-      </Section>
+        </Section>
 
-      <Section title="Feedback ao professor">
-        <button className="w-full bg-surface border border-border rounded-xl p-5 flex items-center gap-3 hover:border-brand">
-          <MessageSquare className="size-5 text-brand" />
-          <div className="text-left flex-1">
-            <div className="text-sm font-semibold">Como foi seu treino?</div>
-            <div className="text-xs text-muted-foreground">Mande feedback direto pro Prof. Marcos</div>
-          </div>
-        </button>
-      </Section>
-
-      <Section title="Fotos do treino">
-        <div className="grid grid-cols-3 gap-2">
-          {["1517438476312-10d79c077509", "1554068865-24cecd4e34b8", "1571019613454-1cb2f99b2d8b", "1583454110551-21f2fa2afe61", "1555597673-b21d5c935865", "1599058917212-d750089bc07e"].map((p) => (
-            <div key={p} className="aspect-square rounded-lg overflow-hidden">
-              <img src={`https://images.unsplash.com/photo-${p}?w=300&h=300&fit=crop`} alt="" className="w-full h-full object-cover" />
+        <Section title="Campeonatos">
+          {tournaments.length === 0 ? (
+            <Empty>Nenhum campeonato anunciado.</Empty>
+          ) : (
+            <div className="space-y-3">
+              {tournaments.map((t) => {
+                const signed = signupByTournament.get(t.id);
+                return (
+                  <div key={t.id} className="bg-surface border border-border rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="size-10 rounded-lg bg-brand/10 grid place-items-center shrink-0">
+                        <Trophy className="size-5 text-brand" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm truncate">{t.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {t.city} · {new Date(t.event_date).toLocaleDateString("pt-BR")}
+                        </div>
+                      </div>
+                      {signed ? (
+                        <span className="text-[10px] uppercase tracking-widest px-2 py-1 rounded bg-brand/10 text-brand self-center">
+                          {signed.status}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => signupMutation.mutate(t.id)}
+                          disabled={signupMutation.isPending}
+                          className="h-8 px-3 bg-brand text-brand-foreground rounded-md text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+                        >
+                          Inscrever
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-      </Section>
+          )}
+        </Section>
 
-      <div className="h-20" />
-    </AlunoShell>
+        <Section title="Fotos do treino">
+          {photos.length === 0 ? (
+            <Empty>
+              <Camera className="size-4 inline mr-2" />
+              Nenhuma foto ainda.
+            </Empty>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map((p) => (
+                <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-surface border border-border">
+                  {p.url && <img src={p.url} alt={p.caption ?? ""} className="w-full h-full object-cover" />}
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+      </div>
+    </div>
   );
 }
 
@@ -151,45 +395,24 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function AlunoShell({ children }: { children: ReactNode }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const tabs = [
-    { to: "/aluno", icon: Home, label: "Início" },
-    { to: "/aluno", icon: Calendar, label: "Agenda" },
-    { to: "/aluno", icon: Camera, label: "Fotos" },
-    { to: "/aluno", icon: Trophy, label: "Eventos" },
-    { to: "/aluno", icon: User, label: "Perfil" },
-  ];
-
+function Empty({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
-      <div className="max-w-md mx-auto pb-20 px-4 pt-6">
-        <header className="flex items-center justify-between mb-6">
-          <Link to="/" className="text-xl font-display tracking-tighter italic">
-            TATAME<span className="text-brand">OS</span>
-          </Link>
-          <button className="size-10 rounded-full bg-surface border border-border flex items-center justify-center relative">
-            <Bell className="size-4" />
-            <span className="absolute top-1.5 right-1.5 size-2 bg-brand rounded-full" />
-          </button>
-        </header>
-        {children}
-      </div>
-
-      <nav className="fixed bottom-0 inset-x-0 bg-surface/95 backdrop-blur border-t border-border">
-        <div className="max-w-md mx-auto grid grid-cols-5">
-          {tabs.map((t, i) => {
-            const Icon = t.icon;
-            const active = i === 0 && pathname === "/aluno";
-            return (
-              <button key={i} className={`py-3 flex flex-col items-center gap-1 ${active ? "text-brand" : "text-muted-foreground"}`}>
-                <Icon className="size-5" />
-                <span className="text-[10px] uppercase tracking-widest">{t.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+    <div className="text-center py-6 border border-dashed border-border rounded-lg text-xs text-muted-foreground">
+      {children}
     </div>
+  );
+}
+
+function PaymentBadge({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    pago: "bg-brand/10 text-brand",
+    "em aberto": "bg-amber-500/10 text-amber-400",
+    atrasado: "bg-red-500/10 text-red-400",
+    "sem cobrança": "bg-surface-2 text-muted-foreground",
+  };
+  return (
+    <span className={`text-[10px] uppercase tracking-widest px-2 py-1 rounded ${map[status]}`}>
+      {status}
+    </span>
   );
 }
