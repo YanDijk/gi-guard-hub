@@ -65,7 +65,7 @@ function OnboardingPage() {
       const { data, error } = await supabase.rpc("create_academy", {
         p_name: parsed.name,
         p_avg_students: parsed.avg_students,
-        p_branches: parsed.branches ?? null,
+        p_branches: parsed.branches ?? "",
         p_purpose: parsed.purpose,
         p_plan: parsed.plan,
       });
