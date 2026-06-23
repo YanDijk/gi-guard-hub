@@ -8,10 +8,13 @@ import {
   Trophy,
   Camera,
   LogOut,
+  Copy,
+  Check,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useMyAcademy, buildSubdomain, buildInviteUrl } from "@/hooks/use-current-academy";
 import { BeltBadge } from "@/components/BeltBadge";
 import { toast } from "sonner";
 
@@ -37,11 +40,21 @@ export function ProfessorShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { data: me } = useCurrentUser();
+  const { data: academy } = useMyAcademy();
+  const [copied, setCopied] = useState(false);
 
   async function handleLogout() {
     await supabase.auth.signOut();
     toast.success("Sessão encerrada");
     navigate({ to: "/auth" });
+  }
+
+  async function copyInvite() {
+    if (!academy) return;
+    await navigator.clipboard.writeText(buildInviteUrl(academy.invite_token));
+    setCopied(true);
+    toast.success("Link de convite copiado");
+    setTimeout(() => setCopied(false), 1500);
   }
 
   return (
@@ -55,6 +68,25 @@ export function ProfessorShell({
             Área do Professor
           </div>
         </div>
+
+        {academy && (
+          <div className="px-4 py-4 border-b border-border space-y-3">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Academia</div>
+              <div className="text-sm font-display truncate">{academy.name}</div>
+              <div className="text-[10px] text-brand truncate">{buildSubdomain(academy.slug)}</div>
+            </div>
+            <button
+              onClick={copyInvite}
+              className="w-full flex items-center gap-2 px-2 py-2 bg-background border border-border rounded text-[11px] text-muted-foreground hover:text-foreground"
+              title="Copiar link de convite"
+            >
+              {copied ? <Check className="size-3 text-brand" /> : <Copy className="size-3" />}
+              <span className="truncate">{copied ? "Copiado!" : "Link de convite"}</span>
+            </button>
+          </div>
+        )}
+
         <nav className="flex-1 px-3 py-4 space-y-1">
           {nav.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
@@ -113,3 +145,4 @@ export function ProfessorShell({
 export function ProfessorLayoutRoute() {
   return <Outlet />;
 }
+
