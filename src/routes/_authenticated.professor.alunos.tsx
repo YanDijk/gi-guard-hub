@@ -71,6 +71,8 @@ function Alunos() {
 
   return (
     <ProfessorShell title="Alunos">
+      <PendingApprovals />
+
       <div className="flex items-center gap-3 mb-6">
         <div className="flex gap-1 bg-surface border border-border rounded-md p-1 text-xs">
           {(["all", "active", "inactive"] as const).map((v) => (
