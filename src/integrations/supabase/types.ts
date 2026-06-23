@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      academies: {
+        Row: {
+          avg_students: number
+          branches: string | null
+          created_at: string
+          id: string
+          invite_token: string
+          name: string
+          owner_id: string
+          plan: Database["public"]["Enums"]["academy_plan"]
+          purpose: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          avg_students?: number
+          branches?: string | null
+          created_at?: string
+          id?: string
+          invite_token?: string
+          name: string
+          owner_id: string
+          plan?: Database["public"]["Enums"]["academy_plan"]
+          purpose?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          avg_students?: number
+          branches?: string | null
+          created_at?: string
+          id?: string
+          invite_token?: string
+          name?: string
+          owner_id?: string
+          plan?: Database["public"]["Enums"]["academy_plan"]
+          purpose?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      academy_memberships: {
+        Row: {
+          academy_id: string
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["membership_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          academy_id: string
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["membership_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          academy_id?: string
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["membership_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_memberships_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendances: {
         Row: {
           attended_on: string
@@ -55,6 +132,7 @@ export type Database = {
       }
       classes: {
         Row: {
+          academy_id: string | null
           capacity: number
           created_at: string
           day_of_week: number
@@ -65,6 +143,7 @@ export type Database = {
           start_time: string
         }
         Insert: {
+          academy_id?: string | null
           capacity?: number
           created_at?: string
           day_of_week: number
@@ -75,6 +154,7 @@ export type Database = {
           start_time: string
         }
         Update: {
+          academy_id?: string | null
           capacity?: number
           created_at?: string
           day_of_week?: number
@@ -84,10 +164,19 @@ export type Database = {
           name?: string
           start_time?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "classes_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       graduations: {
         Row: {
+          academy_id: string | null
           ceremony_date: string
           created_at: string
           from_belt: Database["public"]["Enums"]["belt"]
@@ -99,6 +188,7 @@ export type Database = {
           to_stripes: number
         }
         Insert: {
+          academy_id?: string | null
           ceremony_date: string
           created_at?: string
           from_belt: Database["public"]["Enums"]["belt"]
@@ -110,6 +200,7 @@ export type Database = {
           to_stripes?: number
         }
         Update: {
+          academy_id?: string | null
           ceremony_date?: string
           created_at?: string
           from_belt?: Database["public"]["Enums"]["belt"]
@@ -122,6 +213,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "graduations_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "graduations_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
@@ -132,6 +230,7 @@ export type Database = {
       }
       payments: {
         Row: {
+          academy_id: string | null
           amount: number
           created_at: string
           due_date: string
@@ -143,6 +242,7 @@ export type Database = {
           student_id: string
         }
         Insert: {
+          academy_id?: string | null
           amount: number
           created_at?: string
           due_date: string
@@ -154,6 +254,7 @@ export type Database = {
           student_id: string
         }
         Update: {
+          academy_id?: string | null
           amount?: number
           created_at?: string
           due_date?: string
@@ -166,6 +267,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "payments_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payments_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
@@ -176,6 +284,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          academy_id: string | null
           active: boolean
           avatar_url: string | null
           belt: Database["public"]["Enums"]["belt"]
@@ -191,6 +300,7 @@ export type Database = {
           weight_kg: number | null
         }
         Insert: {
+          academy_id?: string | null
           active?: boolean
           avatar_url?: string | null
           belt?: Database["public"]["Enums"]["belt"]
@@ -206,6 +316,7 @@ export type Database = {
           weight_kg?: number | null
         }
         Update: {
+          academy_id?: string | null
           active?: boolean
           avatar_url?: string | null
           belt?: Database["public"]["Enums"]["belt"]
@@ -220,7 +331,15 @@ export type Database = {
           updated_at?: string
           weight_kg?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tournament_signups: {
         Row: {
@@ -263,6 +382,7 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          academy_id: string | null
           city: string | null
           created_at: string
           event_date: string
@@ -272,6 +392,7 @@ export type Database = {
           registration_url: string | null
         }
         Insert: {
+          academy_id?: string | null
           city?: string | null
           created_at?: string
           event_date: string
@@ -281,6 +402,7 @@ export type Database = {
           registration_url?: string | null
         }
         Update: {
+          academy_id?: string | null
           city?: string | null
           created_at?: string
           event_date?: string
@@ -289,10 +411,19 @@ export type Database = {
           notes?: string | null
           registration_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tournaments_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       training_photos: {
         Row: {
+          academy_id: string | null
           caption: string | null
           created_at: string
           id: string
@@ -301,6 +432,7 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          academy_id?: string | null
           caption?: string | null
           created_at?: string
           id?: string
@@ -309,6 +441,7 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          academy_id?: string | null
           caption?: string | null
           created_at?: string
           id?: string
@@ -316,7 +449,15 @@ export type Database = {
           taken_on?: string
           uploaded_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "training_photos_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -344,7 +485,59 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      claim_professor: { Args: never; Returns: boolean }
+      approve_membership: {
+        Args: { p_membership_id: string }
+        Returns: {
+          academy_id: string
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["membership_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "academy_memberships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_academy: {
+        Args: {
+          p_avg_students: number
+          p_branches: string
+          p_name: string
+          p_plan: Database["public"]["Enums"]["academy_plan"]
+          p_purpose: string
+        }
+        Returns: {
+          avg_students: number
+          branches: string | null
+          created_at: string
+          id: string
+          invite_token: string
+          name: string
+          owner_id: string
+          plan: Database["public"]["Enums"]["academy_plan"]
+          purpose: string | null
+          slug: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "academies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      get_academy_by_invite: {
+        Args: { p_token: string }
+        Returns: {
+          id: string
+          name: string
+          slug: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -352,8 +545,45 @@ export type Database = {
         }
         Returns: boolean
       }
+      join_academy_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          academy_id: string
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["membership_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "academy_memberships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      reject_membership: {
+        Args: { p_membership_id: string }
+        Returns: {
+          academy_id: string
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["membership_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "academy_memberships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      slugify: { Args: { input: string }; Returns: string }
+      unaccent_safe: { Args: { t: string }; Returns: string }
     }
     Enums: {
+      academy_plan: "starter" | "pro" | "elite"
       app_role: "professor" | "aluno"
       belt:
         | "branca"
@@ -363,6 +593,7 @@ export type Database = {
         | "preta"
         | "coral"
         | "vermelha"
+      membership_status: "pending" | "active" | "rejected"
       signup_status: "recomendado" | "convocado" | "inscrito"
     }
     CompositeTypes: {
@@ -491,8 +722,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      academy_plan: ["starter", "pro", "elite"],
       app_role: ["professor", "aluno"],
       belt: ["branca", "azul", "roxa", "marrom", "preta", "coral", "vermelha"],
+      membership_status: ["pending", "active", "rejected"],
       signup_status: ["recomendado", "convocado", "inscrito"],
     },
   },
