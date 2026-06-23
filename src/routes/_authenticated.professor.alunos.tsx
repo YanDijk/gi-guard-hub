@@ -292,3 +292,91 @@ function EditRow({
     </tr>
   );
 }
+
+function PendingApprovals() {
+  const queryClient = useQueryClient();
+  const { data: pending = [] } = useQuery({
+    queryKey: ["pending-memberships"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("academy_memberships")
+        .select("id, user_id, created_at, profiles:profiles!academy_memberships_user_id_fkey(full_name, avatar_url)")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) {
+        const { data: simple } = await supabase
+          .from("academy_memberships")
+          .select("id, user_id, created_at")
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
+        return (simple ?? []).map((m) => ({ ...m, profiles: null as { full_name: string; avatar_url: string | null } | null }));
+      }
+      return data as Array<{ id: string; user_id: string; created_at: string; profiles: { full_name: string; avatar_url: string | null } | null }>;
+    },
+  });
+
+  const approveMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("approve_membership", { p_membership_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Aluno aprovado");
+      queryClient.invalidateQueries({ queryKey: ["pending-memberships"] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
+
+  const rejectMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("reject_membership", { p_membership_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Solicitação recusada");
+      queryClient.invalidateQueries({ queryKey: ["pending-memberships"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
+
+  if (!pending.length) return null;
+
+  return (
+    <div className="mb-6 bg-surface border border-brand/30 rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <div className="text-xs uppercase tracking-widest text-brand font-bold">Aprovações pendentes</div>
+          <div className="text-sm text-muted-foreground">{pending.length} aluno(s) aguardando</div>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {pending.map((m) => (
+          <div key={m.id} className="flex items-center gap-3 bg-background border border-border rounded p-3">
+            <Avatar name={m.profiles?.full_name ?? "Aluno"} url={m.profiles?.avatar_url ?? null} size={36} />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">{m.profiles?.full_name || "Sem nome"}</div>
+              <div className="text-[11px] text-muted-foreground">
+                solicitou em {new Date(m.created_at).toLocaleDateString("pt-BR")}
+              </div>
+            </div>
+            <button
+              onClick={() => approveMut.mutate(m.id)}
+              disabled={approveMut.isPending}
+              className="h-8 px-3 bg-brand text-brand-foreground text-xs font-display uppercase tracking-widest hover:bg-white disabled:opacity-50"
+            >
+              Aprovar
+            </button>
+            <button
+              onClick={() => rejectMut.mutate(m.id)}
+              disabled={rejectMut.isPending}
+              className="h-8 px-3 border border-border text-muted-foreground text-xs font-display uppercase tracking-widest hover:text-foreground disabled:opacity-50"
+            >
+              Recusar
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
