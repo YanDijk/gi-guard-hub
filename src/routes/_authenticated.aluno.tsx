@@ -213,7 +213,7 @@ function Aluno() {
               : `Sua solicitação para ${acad?.name ?? "esta academia"} foi recusada. Fale com seu professor.`}
           </p>
           <button
-            onClick={handleSignOut}
+            onClick={handleLogout}
             className="w-full h-11 border border-border text-muted-foreground hover:text-foreground font-display uppercase tracking-widest text-xs"
           >
             Sair
