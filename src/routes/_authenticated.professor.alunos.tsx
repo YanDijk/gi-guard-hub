@@ -298,20 +298,19 @@ function PendingApprovals() {
   const { data: pending = [] } = useQuery({
     queryKey: ["pending-memberships"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: rows, error } = await supabase
         .from("academy_memberships")
-        .select("id, user_id, created_at, profiles:profiles!academy_memberships_user_id_fkey(full_name, avatar_url)")
+        .select("id, user_id, created_at")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
-      if (error) {
-        const { data: simple } = await supabase
-          .from("academy_memberships")
-          .select("id, user_id, created_at")
-          .eq("status", "pending")
-          .order("created_at", { ascending: false });
-        return (simple ?? []).map((m) => ({ ...m, profiles: null as { full_name: string; avatar_url: string | null } | null }));
-      }
-      return data as Array<{ id: string; user_id: string; created_at: string; profiles: { full_name: string; avatar_url: string | null } | null }>;
+      if (error) throw error;
+      if (!rows?.length) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url")
+        .in("id", rows.map((r) => r.user_id));
+      const map = new Map((profs ?? []).map((p) => [p.id, p]));
+      return rows.map((r) => ({ ...r, profile: map.get(r.user_id) ?? null }));
     },
   });
 
