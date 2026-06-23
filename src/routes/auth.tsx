@@ -1,11 +1,17 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
+import { resolveNextDestination } from "@/hooks/use-current-academy";
+
+type Search = { redirect?: string };
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>): Search => ({
+    redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Entrar — TatameOS" },
@@ -21,17 +27,26 @@ const nameSchema = z.string().trim().min(2, "Informe seu nome").max(120);
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { redirect } = useSearch({ from: "/auth" });
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
+  async function goAfterAuth() {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) return;
+    const dest = redirect && redirect.startsWith("/") ? redirect : await resolveNextDestination(data.user.id);
+    navigate({ to: dest });
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/professor" });
+      if (data.session) goAfterAuth();
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,16 +57,23 @@ function AuthPage() {
 
       if (mode === "signup") {
         const nameOk = nameSchema.parse(fullName);
+        const redirectPath = redirect ?? "/onboarding";
         const { error } = await supabase.auth.signUp({
           email: emailOk,
           password: passwordOk,
           options: {
-            emailRedirectTo: `${window.location.origin}/professor`,
+            emailRedirectTo: `${window.location.origin}${redirectPath}`,
             data: { full_name: nameOk },
           },
         });
         if (error) throw error;
-        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+        const { data: s } = await supabase.auth.getSession();
+        if (s.session) {
+          toast.success("Conta criada!");
+          await goAfterAuth();
+        } else {
+          toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: emailOk,
@@ -59,7 +81,7 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("Bem-vindo de volta!");
-        navigate({ to: "/professor" });
+        await goAfterAuth();
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro inesperado";
@@ -72,15 +94,16 @@ function AuthPage() {
   async function handleGoogle() {
     setLoading(true);
     try {
+      const redirectPath = redirect ?? "/onboarding";
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + "/professor",
+        redirect_uri: window.location.origin + redirectPath,
       });
       if (result.error) {
         toast.error("Falha ao entrar com Google");
         return;
       }
       if (result.redirected) return;
-      navigate({ to: "/professor" });
+      await goAfterAuth();
     } finally {
       setLoading(false);
     }
