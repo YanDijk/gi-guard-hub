@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProfessorShell } from "@/components/ProfessorShell";
-import { Avatar } from "@/routes/_authenticated.professor.index";
+import { Avatar } from "@/components/Avatar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, MapPin, Calendar, Plus, Users, Trash2, ExternalLink } from "lucide-react";

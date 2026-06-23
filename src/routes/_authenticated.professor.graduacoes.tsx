@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProfessorShell } from "@/components/ProfessorShell";
 import { BeltBadge } from "@/components/BeltBadge";
-import { Avatar } from "@/routes/_authenticated.professor.index";
+import { Avatar } from "@/components/Avatar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Award, Plus, Trash2 } from "lucide-react";
