@@ -189,10 +189,6 @@ function Aluno() {
     navigate({ to: "/auth", replace: true });
   }
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
 
   if (meLoading || memLoading || !me?.profile) {
     return (
