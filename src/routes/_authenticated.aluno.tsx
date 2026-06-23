@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bell, CheckCircle2, Trophy, LogOut, Loader2, Camera } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { Bell, CheckCircle2, Trophy, LogOut, Loader2, Camera, Clock } from "lucide-react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useMyMembership } from "@/hooks/use-current-academy";
 import { BeltBadge } from "@/components/BeltBadge";
 import { Avatar } from "@/components/Avatar";
 import { DAY_LABELS, formatCurrency } from "@/lib/jiujitsu";
