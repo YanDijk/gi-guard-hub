@@ -165,7 +165,7 @@ function Aluno() {
       if (!userId) throw new Error("Sem sessão");
       const { error } = await supabase
         .from("tournament_signups")
-        .insert({ tournament_id: tournamentId, student_id: userId, status: "interested" });
+        .insert({ tournament_id: tournamentId, student_id: userId, status: "inscrito" });
       if (error) throw error;
     },
     onSuccess: () => {
