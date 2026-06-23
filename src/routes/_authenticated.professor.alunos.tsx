@@ -352,9 +352,9 @@ function PendingApprovals() {
       <div className="space-y-2">
         {pending.map((m) => (
           <div key={m.id} className="flex items-center gap-3 bg-background border border-border rounded p-3">
-            <Avatar name={m.profiles?.full_name ?? "Aluno"} url={m.profiles?.avatar_url ?? null} size={36} />
+            <Avatar name={m.profile?.full_name ?? "Aluno"} url={m.profile?.avatar_url ?? null} size={36} />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">{m.profiles?.full_name || "Sem nome"}</div>
+              <div className="text-sm font-medium truncate">{m.profile?.full_name || "Sem nome"}</div>
               <div className="text-[11px] text-muted-foreground">
                 solicitou em {new Date(m.created_at).toLocaleDateString("pt-BR")}
               </div>
