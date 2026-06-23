@@ -21,7 +21,15 @@ function Aluno() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: me, isLoading: meLoading } = useCurrentUser();
+  const { data: membership, isLoading: memLoading } = useMyMembership();
   const userId = me?.userId;
+
+  useEffect(() => {
+    if (meLoading || memLoading) return;
+    if (me && !me.isProfessor && !membership) {
+      navigate({ to: "/onboarding" });
+    }
+  }, [me, meLoading, membership, memLoading, navigate]);
 
   const today = new Date();
   const todayDow = today.getDay();
