@@ -545,6 +545,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_academy_owner: {
+        Args: { p_academy_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_active_academy_member: {
+        Args: { p_academy_id: string; p_user_id: string }
+        Returns: boolean
+      }
       join_academy_by_token: {
         Args: { p_token: string }
         Returns: {
