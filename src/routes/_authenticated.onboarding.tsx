@@ -72,9 +72,10 @@ function OnboardingPage() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (academy) => {
       toast.success("Academia criada!");
-      queryClient.invalidateQueries();
+      queryClient.setQueryData(["my-academy"], academy);
+      await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       navigate({ to: "/professor" });
     },
     onError: (e: unknown) => {
