@@ -10,11 +10,11 @@ export const Route = createFileRoute("/_authenticated/professor")({
 
 function ProfessorGate() {
   const { data: me, isLoading: meLoading } = useCurrentUser();
-  const { data: academy, isLoading: acadLoading } = useMyAcademy();
+  const { data: academy, isLoading: acadLoading, isFetching: acadFetching } = useMyAcademy();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (meLoading || acadLoading) return;
+    if (meLoading || acadLoading || acadFetching) return;
     if (!me) {
       navigate({ to: "/auth" });
       return;
@@ -22,9 +22,9 @@ function ProfessorGate() {
     if (!academy) {
       navigate({ to: "/onboarding" });
     }
-  }, [me, meLoading, academy, acadLoading, navigate]);
+  }, [me, meLoading, academy, acadLoading, acadFetching, navigate]);
 
-  if (meLoading || acadLoading || !academy) {
+  if (meLoading || acadLoading || acadFetching || !academy) {
     return (
       <div className="min-h-screen grid place-items-center bg-background text-muted-foreground">
         <Loader2 className="size-6 animate-spin" />
