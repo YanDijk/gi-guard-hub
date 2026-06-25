@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ProfessorShell } from "@/components/ProfessorShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, Trash2, Loader2 } from "lucide-react";
+import { Upload, Trash2, Loader2, Download } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
