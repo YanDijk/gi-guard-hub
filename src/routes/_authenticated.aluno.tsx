@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bell, CheckCircle2, Trophy, LogOut, Loader2, Camera, Clock } from "lucide-react";
+import { Bell, CheckCircle2, Trophy, LogOut, Loader2, Camera, Clock, MessageSquare, Download } from "lucide-react";
 import { useEffect, useMemo, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
