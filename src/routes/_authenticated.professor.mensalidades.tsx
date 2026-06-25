@@ -263,7 +263,7 @@ function PlansSection({ plans }: { plans: Array<{ id: string; name: string; amou
       const amt = Number(amount);
       if (!amt || amt <= 0) throw new Error("Valor inválido");
       const dd = Math.min(28, Math.max(1, Number(dueDay) || 10));
-      const { error } = await supabase.from("monthly_plans").insert({ name: name.trim(), amount: amt, due_day: dd });
+      const { error } = await supabase.from("monthly_plans").insert({ name: name.trim(), amount: amt, due_day: dd } as never);
       if (error) throw error;
     },
     onSuccess: () => {
