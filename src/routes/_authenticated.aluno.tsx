@@ -139,6 +139,35 @@ function Aluno() {
     },
   });
 
+  const { data: feedback = [] } = useQuery({
+    enabled: !!userId,
+    queryKey: ["aluno-feedback", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("student_feedback")
+        .select("id, body, created_at")
+        .eq("student_id", userId!)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: myPlan } = useQuery({
+    enabled: !!me?.profile?.plan_id,
+    queryKey: ["aluno-plan", me?.profile?.plan_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("monthly_plans")
+        .select("name, amount, due_day")
+        .eq("id", me!.profile!.plan_id!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const todayClasses = useMemo(
     () => classes.filter((c) => c.day_of_week === todayDow),
     [classes, todayDow],
