@@ -93,6 +93,7 @@ export type Database = {
       }
       attendances: {
         Row: {
+          academy_id: string | null
           attended_on: string
           class_id: string | null
           created_at: string
@@ -100,6 +101,7 @@ export type Database = {
           student_id: string
         }
         Insert: {
+          academy_id?: string | null
           attended_on?: string
           class_id?: string | null
           created_at?: string
@@ -107,6 +109,7 @@ export type Database = {
           student_id: string
         }
         Update: {
+          academy_id?: string | null
           attended_on?: string
           class_id?: string | null
           created_at?: string
@@ -114,6 +117,13 @@ export type Database = {
           student_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "attendances_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "attendances_class_id_fkey"
             columns: ["class_id"]
@@ -343,6 +353,7 @@ export type Database = {
       }
       tournament_signups: {
         Row: {
+          academy_id: string | null
           created_at: string
           id: string
           status: Database["public"]["Enums"]["signup_status"]
@@ -350,6 +361,7 @@ export type Database = {
           tournament_id: string
         }
         Insert: {
+          academy_id?: string | null
           created_at?: string
           id?: string
           status?: Database["public"]["Enums"]["signup_status"]
@@ -357,6 +369,7 @@ export type Database = {
           tournament_id: string
         }
         Update: {
+          academy_id?: string | null
           created_at?: string
           id?: string
           status?: Database["public"]["Enums"]["signup_status"]
@@ -364,6 +377,13 @@ export type Database = {
           tournament_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_signups_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_signups_student_id_fkey"
             columns: ["student_id"]
@@ -530,6 +550,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      current_academy_id: { Args: never; Returns: string }
       get_academy_by_invite: {
         Args: { p_token: string }
         Returns: {
