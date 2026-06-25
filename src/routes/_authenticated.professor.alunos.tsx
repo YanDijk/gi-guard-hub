@@ -5,7 +5,8 @@ import { Avatar } from "@/components/Avatar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BELTS, type Belt, formatCurrency } from "@/lib/jiujitsu";
-import { Pencil, X, Check, UserX, UserCheck } from "lucide-react";
+import { Pencil, X, Check, UserX, UserCheck, MessageSquare } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -154,6 +155,7 @@ function Alunos() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-1">
+                      <FeedbackButton studentId={s.id} studentName={s.full_name || "Aluno"} />
                       <button
                         onClick={() => updateMutation.mutate({ id: s.id, active: !s.active })}
                         className="size-8 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-surface-2 rounded"
@@ -377,5 +379,98 @@ function PendingApprovals() {
         ))}
       </div>
     </div>
+  );
+}
+
+function FeedbackButton({ studentId, studentName }: { studentId: string; studentName: string }) {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [body, setBody] = useState("");
+
+  const { data: items = [] } = useQuery({
+    enabled: open,
+    queryKey: ["student-feedback", studentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("student_feedback")
+        .select("id, body, created_at, author_id")
+        .eq("student_id", studentId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const addMut = useMutation({
+    mutationFn: async () => {
+      const text = body.trim();
+      if (!text) throw new Error("Escreva algum feedback");
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Sem sessão");
+      const { error } = await supabase
+        .from("student_feedback")
+        .insert({ student_id: studentId, body: text, author_id: u.user.id } as never);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Feedback registrado");
+      setBody("");
+      queryClient.invalidateQueries({ queryKey: ["student-feedback", studentId] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button
+          className="size-8 grid place-items-center text-muted-foreground hover:text-brand hover:bg-surface-2 rounded"
+          title="Feedback"
+        >
+          <MessageSquare className="size-4" />
+        </button>
+      </SheetTrigger>
+      <SheetContent className="w-full sm:max-w-md flex flex-col">
+        <SheetTitle>Feedback do sensei</SheetTitle>
+        <SheetDescription>Para {studentName}</SheetDescription>
+
+        <form
+          onSubmit={(e) => { e.preventDefault(); addMut.mutate(); }}
+          className="space-y-2 mt-4"
+        >
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Observação, elogio, ponto a melhorar..."
+            rows={4}
+            className="w-full p-3 bg-surface border border-border rounded text-sm resize-none"
+          />
+          <button
+            disabled={addMut.isPending}
+            className="w-full h-9 bg-brand text-brand-foreground rounded text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+          >
+            {addMut.isPending ? "Enviando..." : "Adicionar feedback"}
+          </button>
+        </form>
+
+        <div className="flex-1 overflow-y-auto mt-6 space-y-3">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Histórico</div>
+          {items.length === 0 ? (
+            <div className="text-center py-6 border border-dashed border-border rounded text-xs text-muted-foreground">
+              Nenhum feedback ainda.
+            </div>
+          ) : (
+            items.map((it) => (
+              <div key={it.id} className="bg-surface border border-border rounded p-3">
+                <div className="text-[10px] text-muted-foreground mb-1">
+                  {new Date(it.created_at).toLocaleString("pt-BR")}
+                </div>
+                <div className="text-sm whitespace-pre-wrap">{it.body}</div>
+              </div>
+            ))
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
