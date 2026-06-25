@@ -5,7 +5,8 @@ import { Avatar } from "@/components/Avatar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BELTS, type Belt, formatCurrency } from "@/lib/jiujitsu";
-import { Pencil, X, Check, UserX, UserCheck } from "lucide-react";
+import { Pencil, X, Check, UserX, UserCheck, MessageSquare } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useState } from "react";
 import { toast } from "sonner";
 
