@@ -127,14 +127,26 @@ function Fotos() {
                   <div className="font-semibold">{new Date(p.taken_on).toLocaleDateString("pt-BR")}</div>
                   {p.caption && <div className="text-muted-foreground">{p.caption}</div>}
                 </div>
-                <button
-                  onClick={() => {
-                    if (confirm("Remover foto?")) deleteMutation.mutate({ id: p.id, photo_path: p.photo_path });
-                  }}
-                  className="size-7 grid place-items-center bg-black/60 rounded text-white hover:text-red-400"
-                >
-                  <Trash2 className="size-3" />
-                </button>
+                <div className="flex gap-1">
+                  <a
+                    href={p.url}
+                    download={`tatame-${p.taken_on}-${p.id.slice(0, 6)}.jpg`}
+                    target="_blank"
+                    rel="noopener"
+                    className="size-7 grid place-items-center bg-black/60 rounded text-white hover:text-brand"
+                    title="Baixar"
+                  >
+                    <Download className="size-3" />
+                  </a>
+                  <button
+                    onClick={() => {
+                      if (confirm("Remover foto?")) deleteMutation.mutate({ id: p.id, photo_path: p.photo_path });
+                    }}
+                    className="size-7 grid place-items-center bg-black/60 rounded text-white hover:text-red-400"
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
