@@ -155,6 +155,7 @@ function Alunos() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-1">
+                      <FeedbackButton studentId={s.id} studentName={s.full_name || "Aluno"} />
                       <button
                         onClick={() => updateMutation.mutate({ id: s.id, active: !s.active })}
                         className="size-8 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-surface-2 rounded"
