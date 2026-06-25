@@ -238,6 +238,47 @@ export type Database = {
           },
         ]
       }
+      monthly_plans: {
+        Row: {
+          academy_id: string
+          active: boolean
+          amount: number
+          created_at: string
+          due_day: number
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          academy_id: string
+          active?: boolean
+          amount?: number
+          created_at?: string
+          due_day?: number
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          academy_id?: string
+          active?: boolean
+          amount?: number
+          created_at?: string
+          due_day?: number
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_plans_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           academy_id: string | null
@@ -305,6 +346,7 @@ export type Database = {
           id: string
           monthly_fee: number
           phone: string | null
+          plan_id: string | null
           stripes: number
           updated_at: string
           weight_kg: number | null
@@ -321,6 +363,7 @@ export type Database = {
           id: string
           monthly_fee?: number
           phone?: string | null
+          plan_id?: string | null
           stripes?: number
           updated_at?: string
           weight_kg?: number | null
@@ -337,6 +380,7 @@ export type Database = {
           id?: string
           monthly_fee?: number
           phone?: string | null
+          plan_id?: string | null
           stripes?: number
           updated_at?: string
           weight_kg?: number | null
@@ -347,6 +391,62 @@ export type Database = {
             columns: ["academy_id"]
             isOneToOne: false
             referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_feedback: {
+        Row: {
+          academy_id: string
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          academy_id: string
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          academy_id?: string
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_feedback_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_feedback_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_feedback_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -557,6 +657,15 @@ export type Database = {
           id: string
           name: string
           slug: string
+        }[]
+      }
+      get_plans_by_invite: {
+        Args: { p_token: string }
+        Returns: {
+          amount: number
+          due_day: number
+          id: string
+          name: string
         }[]
       }
       has_role: {
