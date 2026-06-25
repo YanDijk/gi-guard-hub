@@ -362,22 +362,50 @@ function Aluno() {
         </Section>
 
         <Section title="Mensalidade">
-          <div className="bg-surface border border-border rounded-xl p-5 flex items-center justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                {today.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
-              </div>
-              <div className="font-display text-2xl">
-                {formatCurrency(currentPayment?.amount ?? profile.monthly_fee ?? 0)}
-              </div>
-              {currentPayment?.due_date && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  Vence em {new Date(currentPayment.due_date).toLocaleDateString("pt-BR")}
+          <div className="bg-surface border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                  {today.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
                 </div>
-              )}
+                <div className="font-display text-2xl">
+                  {formatCurrency(currentPayment?.amount ?? profile.monthly_fee ?? 0)}
+                </div>
+                {currentPayment?.due_date && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Vence em {new Date(currentPayment.due_date).toLocaleDateString("pt-BR")}
+                  </div>
+                )}
+              </div>
+              <PaymentBadge status={paymentStatus} />
             </div>
-            <PaymentBadge status={paymentStatus} />
+            {myPlan && (
+              <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Plano</span>
+                <span className="font-semibold">{myPlan.name}</span>
+              </div>
+            )}
           </div>
+        </Section>
+
+        <Section title="Feedback do sensei">
+          {feedback.length === 0 ? (
+            <Empty>
+              <MessageSquare className="size-4 inline mr-2" />
+              Sem feedbacks ainda.
+            </Empty>
+          ) : (
+            <div className="space-y-2">
+              {feedback.map((f) => (
+                <div key={f.id} className="bg-surface border border-border rounded-xl p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-brand mb-1">
+                    {new Date(f.created_at).toLocaleDateString("pt-BR")}
+                  </div>
+                  <div className="text-sm whitespace-pre-wrap">{f.body}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </Section>
 
         <Section title="Campeonatos">
@@ -429,9 +457,19 @@ function Aluno() {
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {photos.map((p) => (
-                <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-surface border border-border">
+                <a
+                  key={p.id}
+                  href={p.url || "#"}
+                  download={`tatame-${p.taken_on}.jpg`}
+                  target="_blank"
+                  rel="noopener"
+                  className="aspect-square rounded-lg overflow-hidden bg-surface border border-border relative group block"
+                >
                   {p.url && <img src={p.url} alt={p.caption ?? ""} className="w-full h-full object-cover" />}
-                </div>
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity grid place-items-center">
+                    <Download className="size-5 text-white" />
+                  </div>
+                </a>
               ))}
             </div>
           )}
