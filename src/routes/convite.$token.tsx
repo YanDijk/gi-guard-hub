@@ -86,7 +86,17 @@ function InvitePage() {
       }
 
       const selectedPlan = plans.find((p) => p.id === pPlanId);
-      const patch: Record<string, unknown> = {
+      const patch: {
+        full_name?: string;
+        belt: Belt;
+        weight_kg: number | null;
+        birth_date: string | null;
+        phone: string | null;
+        plan_id: string | null;
+        monthly_fee?: number;
+        due_day?: number;
+        avatar_url?: string;
+      } = {
         full_name: fullName || undefined,
         belt: pBelt,
         weight_kg: pWeight ? Number(pWeight) : null,
