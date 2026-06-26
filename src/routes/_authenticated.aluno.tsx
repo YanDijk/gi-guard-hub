@@ -328,7 +328,7 @@ function Aluno() {
                       }`}
                     >
                       <CheckCircle2 className="size-4" />
-                      <span className="hidden xs:inline">{done ? "Presente" : "Check-in"}</span>
+                      <span>{done ? "Presente" : "Check-in"}</span>
                     </button>
                   </div>
                 );
