@@ -172,18 +172,6 @@ function OnboardingPage() {
             />
           </Field>
 
-          <Field label="Nome da academia *">
-            <input
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ex.: Equipe Alfa Jiu-Jitsu"
-              className="input"
-            />
-            <div className="mt-2 text-[11px] uppercase tracking-widest text-white/40">
-              Subdomínio: <span className="text-brand">{buildSubdomain(previewSlug)}</span>
-            </div>
-          </Field>
 
           <Field label="Logo da academia (opcional)">
             <div className="flex items-center gap-4">
