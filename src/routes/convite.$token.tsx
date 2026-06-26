@@ -27,7 +27,7 @@ function InvitePage() {
   const { token } = useParams({ from: "/convite/$token" });
   const navigate = useNavigate();
 
-  const [academy, setAcademy] = useState<{ id: string; name: string; slug: string } | null>(null);
+  const [academy, setAcademy] = useState<{ id: string; name: string; slug: string; logo_url: string | null } | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loadingAcad, setLoadingAcad] = useState(true);
   const [hasSession, setHasSession] = useState(false);
@@ -142,7 +142,15 @@ function InvitePage() {
           },
         });
         if (error) throw error;
-        const { data: s } = await supabase.auth.getSession();
+        // Try to obtain session — if email confirmation is required this may be empty;
+        // attempt password sign-in as a fallback so the flow doesn't get stuck.
+        let { data: s } = await supabase.auth.getSession();
+        if (!s.session) {
+          const { data: signIn } = await supabase.auth.signInWithPassword({ email: emailOk, password: passwordOk });
+          if (signIn.session) {
+            s = { session: signIn.session } as typeof s;
+          }
+        }
         if (s.session) {
           setHasSession(true);
           setStep("profile");
@@ -220,6 +228,17 @@ function InvitePage() {
       <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
         <div className="w-full max-w-md">
           <div className="mb-6 text-center">
+            {academy.logo_url ? (
+              <img
+                src={academy.logo_url}
+                alt={academy.name}
+                className="size-20 sm:size-24 mx-auto rounded-full object-cover border border-border bg-surface mb-4"
+              />
+            ) : (
+              <div className="size-20 sm:size-24 mx-auto rounded-full border border-border bg-surface mb-4 grid place-items-center font-display text-brand text-2xl">
+                {academy.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
             <span className="text-[10px] uppercase tracking-widest text-brand font-bold">Convite</span>
             <h1 className="font-display text-2xl sm:text-3xl uppercase mt-2 mb-2">{academy.name}</h1>
             <p className="text-white/50 text-xs sm:text-sm">
