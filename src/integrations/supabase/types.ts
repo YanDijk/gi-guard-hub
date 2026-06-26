@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           id: string
           invite_token: string
+          logo_url: string | null
           name: string
           owner_id: string
           plan: Database["public"]["Enums"]["academy_plan"]
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           id?: string
           invite_token?: string
+          logo_url?: string | null
           name: string
           owner_id: string
           plan?: Database["public"]["Enums"]["academy_plan"]
@@ -47,6 +49,7 @@ export type Database = {
           created_at?: string
           id?: string
           invite_token?: string
+          logo_url?: string | null
           name?: string
           owner_id?: string
           plan?: Database["public"]["Enums"]["academy_plan"]
@@ -636,6 +639,7 @@ export type Database = {
           created_at: string
           id: string
           invite_token: string
+          logo_url: string | null
           name: string
           owner_id: string
           plan: Database["public"]["Enums"]["academy_plan"]
@@ -655,6 +659,7 @@ export type Database = {
         Args: { p_token: string }
         Returns: {
           id: string
+          logo_url: string
           name: string
           slug: string
         }[]

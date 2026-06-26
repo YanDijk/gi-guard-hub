@@ -91,25 +91,25 @@ function Dashboard() {
 
   return (
     <ProfessorShell title="Dashboard">
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
         {stats.map((s) => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className="bg-surface border border-border rounded-lg p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">
+            <div key={s.label} className="bg-surface border border-border rounded-lg p-4 lg:p-5">
+              <div className="flex items-start justify-between mb-2 lg:mb-3 gap-2">
+                <div className="text-[10px] lg:text-xs uppercase tracking-widest text-muted-foreground min-w-0 truncate">
                   {s.label}
                 </div>
-                <Icon className={`size-4 ${s.color}`} />
+                <Icon className={`size-4 shrink-0 ${s.color}`} />
               </div>
-              <div className="text-3xl font-display tracking-tight">{s.value}</div>
+              <div className="text-2xl lg:text-3xl font-display tracking-tight truncate">{s.value}</div>
             </div>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Card title="Aulas de hoje" linkTo="/professor/calendario" linkLabel="Ver calendário" className="col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card title="Aulas de hoje" linkTo="/professor/calendario" linkLabel="Ver calendário" className="lg:col-span-2">
           {isLoading ? (
             <Skeleton />
           ) : data?.todayClasses.length === 0 ? (
@@ -157,23 +157,23 @@ function Dashboard() {
           )}
         </Card>
 
-        <Card title="Alunos recentes" linkTo="/professor/alunos" linkLabel="Ver todos" className="col-span-2">
+        <Card title="Alunos recentes" linkTo="/professor/alunos" linkLabel="Ver todos" className="lg:col-span-2">
           {data?.recentStudents.length === 0 ? (
             <Empty label="Nenhum aluno cadastrado ainda." />
           ) : (
             <div className="divide-y divide-border">
               {data?.recentStudents.map((s) => (
-                <div key={s.id} className="flex items-center gap-4 py-3">
+                <div key={s.id} className="flex items-center gap-3 py-3 min-w-0">
                   <Avatar name={s.full_name || "Aluno"} url={s.avatar_url} />
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold">{s.full_name || "(sem nome)"}</div>
-                    <div className="text-xs text-muted-foreground">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold truncate">{s.full_name || "(sem nome)"}</div>
+                    <div className="text-xs text-muted-foreground truncate">
                       {s.weight_kg ? `${s.weight_kg}kg` : "peso —"} · {DAY_LABELS[new Date(s.created_at).getDay()]}
                     </div>
                   </div>
                   <BeltBadge belt={s.belt} stripes={s.stripes} />
                   <span
-                    className={`text-[10px] uppercase tracking-widest px-2 py-1 rounded ${
+                    className={`hidden sm:inline text-[10px] uppercase tracking-widest px-2 py-1 rounded shrink-0 ${
                       s.active ? "bg-brand/10 text-brand" : "bg-white/5 text-muted-foreground"
                     }`}
                   >
@@ -221,7 +221,7 @@ function Card({
   className?: string;
 }) {
   return (
-    <div className={`bg-surface border border-border rounded-lg p-6 ${className}`}>
+    <div className={`bg-surface border border-border rounded-lg p-4 lg:p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-lg">{title}</h2>
         {linkTo && linkLabel && (

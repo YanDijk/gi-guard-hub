@@ -74,7 +74,7 @@ function Alunos() {
     <ProfessorShell title="Alunos">
       <PendingApprovals />
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3 mb-4 lg:mb-6">
         <div className="flex gap-1 bg-surface border border-border rounded-md p-1 text-xs">
           {(["all", "active", "inactive"] as const).map((v) => (
             <button
@@ -91,8 +91,55 @@ function Alunos() {
         <div className="ml-auto text-xs text-muted-foreground">{filtered.length} alunos</div>
       </div>
 
-      <div className="bg-surface border border-border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
+      {/* Mobile card list */}
+      <div className="md:hidden space-y-2">
+        {isLoading && (
+          <div className="bg-surface border border-border rounded-lg p-6 text-center text-sm text-muted-foreground">Carregando...</div>
+        )}
+        {!isLoading && filtered.length === 0 && (
+          <div className="bg-surface border border-border rounded-lg p-6 text-center text-sm text-muted-foreground">
+            Nenhum aluno ainda.
+          </div>
+        )}
+        {filtered.map((s) => (
+          <div key={s.id} className="bg-surface border border-border rounded-lg p-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar name={s.full_name || "Aluno"} url={s.avatar_url} size={40} />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm truncate">{s.full_name || "(sem nome)"}</div>
+                <div className="text-[11px] text-muted-foreground truncate">
+                  {s.weight_kg ? `${s.weight_kg}kg` : "—"} · {s.phone || "sem tel"} · {s.att30} pres./30d
+                </div>
+              </div>
+              <BeltBadge belt={s.belt} stripes={s.stripes} size="sm" />
+            </div>
+            <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-border">
+              <div className="text-xs font-mono">{formatCurrency(s.monthly_fee)}</div>
+              <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${s.active ? "bg-brand/10 text-brand" : "bg-white/5 text-muted-foreground"}`}>
+                {s.active ? "ativo" : "inativo"}
+              </span>
+              <div className="ml-auto flex gap-1">
+                <FeedbackButton studentId={s.id} studentName={s.full_name || "Aluno"} />
+                <button
+                  onClick={() => updateMutation.mutate({ id: s.id, active: !s.active })}
+                  className="size-8 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-surface-2 rounded"
+                >
+                  {s.active ? <UserX className="size-4" /> : <UserCheck className="size-4" />}
+                </button>
+                <button
+                  onClick={() => setEditingId(s.id)}
+                  className="size-8 grid place-items-center text-muted-foreground hover:text-brand hover:bg-surface-2 rounded"
+                >
+                  <Pencil className="size-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden md:block bg-surface border border-border rounded-lg overflow-x-auto">
+        <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-surface-2 text-xs uppercase tracking-widest text-muted-foreground">
             <tr>
               <th className="text-left px-4 py-3 font-medium">Aluno</th>
