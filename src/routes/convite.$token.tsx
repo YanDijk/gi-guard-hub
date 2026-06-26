@@ -142,16 +142,15 @@ function InvitePage() {
           },
         });
         if (error) throw error;
-        // Try to obtain session — if email confirmation is required this may be empty;
-        // attempt password sign-in as a fallback so the flow doesn't get stuck.
-        let { data: s } = await supabase.auth.getSession();
-        if (!s.session) {
-          const { data: signIn } = await supabase.auth.signInWithPassword({ email: emailOk, password: passwordOk });
-          if (signIn.session) {
-            s = { session: signIn.session } as typeof s;
-          }
-        }
+        let hasActiveSession = false;
+        const { data: s } = await supabase.auth.getSession();
         if (s.session) {
+          hasActiveSession = true;
+        } else {
+          const { data: signIn } = await supabase.auth.signInWithPassword({ email: emailOk, password: passwordOk });
+          if (signIn.session) hasActiveSession = true;
+        }
+        if (hasActiveSession) {
           setHasSession(true);
           setStep("profile");
         } else {
