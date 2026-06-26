@@ -48,10 +48,17 @@ function OnboardingPage() {
   const [branches, setBranches] = useState("");
   const [purpose, setPurpose] = useState("");
   const [plan, setPlan] = useState<"starter" | "pro" | "elite">(search.plan ?? "starter");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (existing) navigate({ to: "/professor" });
   }, [existing, navigate]);
+
+  function handleLogoPick(file: File | null) {
+    setLogoFile(file);
+    setLogoPreview(file ? URL.createObjectURL(file) : null);
+  }
 
   const createMut = useMutation({
     mutationFn: async () => {
@@ -70,7 +77,27 @@ function OnboardingPage() {
         p_plan: parsed.plan,
       });
       if (error) throw error;
-      return data;
+      const academy = data as { id: string } & Record<string, unknown>;
+      // upload logo if any (best-effort, non-blocking)
+      if (logoFile && academy?.id) {
+        try {
+          const ext = logoFile.name.split(".").pop() ?? "png";
+          const path = `academy-logos/${academy.id}/logo.${ext}`;
+          const up = await supabase.storage.from("avatars").upload(path, logoFile, {
+            upsert: true,
+            contentType: logoFile.type,
+          });
+          if (!up.error) {
+            const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+            const publicUrl = pub.publicUrl;
+            await supabase.from("academies").update({ logo_url: publicUrl }).eq("id", academy.id);
+            (academy as { logo_url?: string }).logo_url = publicUrl;
+          }
+        } catch (err) {
+          console.warn("logo upload skipped", err);
+        }
+      }
+      return academy;
     },
     onSuccess: async (academy) => {
       toast.success("Academia criada!");
@@ -143,6 +170,54 @@ function OnboardingPage() {
               onChange={(e) => setAvg(e.target.value)}
               className="input"
             />
+          </Field>
+
+          <Field label="Nome da academia *">
+            <input
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex.: Equipe Alfa Jiu-Jitsu"
+              className="input"
+            />
+            <div className="mt-2 text-[11px] uppercase tracking-widest text-white/40">
+              Subdomínio: <span className="text-brand">{buildSubdomain(previewSlug)}</span>
+            </div>
+          </Field>
+
+          <Field label="Logo da academia (opcional)">
+            <div className="flex items-center gap-4">
+              <div className="size-20 rounded-full border border-border bg-surface overflow-hidden grid place-items-center shrink-0">
+                {logoPreview ? (
+                  <img src={logoPreview} alt="logo" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-display text-brand text-xl">
+                    {(name || "BJ").slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <label className="cursor-pointer text-xs uppercase tracking-widest text-brand hover:text-white">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleLogoPick(e.target.files?.[0] ?? null)}
+                />
+                {logoFile ? "Trocar imagem" : "Enviar imagem"}
+              </label>
+              {logoFile && (
+                <button
+                  type="button"
+                  onClick={() => handleLogoPick(null)}
+                  className="text-xs text-white/40 hover:text-white"
+                >
+                  Remover
+                </button>
+              )}
+            </div>
+            <p className="mt-2 text-[11px] text-white/40">
+              Os alunos verão sua logo na tela de convite.
+            </p>
           </Field>
 
           <Field label="Filiais (opcional)">
