@@ -192,6 +192,7 @@ function Aluno() {
   const signupByTournament = useMemo(
     () => new Map(mySignups.map((s) => [s.tournament_id, s])),
     [mySignups],
+  );
   const rsvpByClass = useMemo(
     () => new Map(todayRsvps.map((r: any) => [r.class_id, r])),
     [todayRsvps],
