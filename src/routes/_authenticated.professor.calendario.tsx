@@ -195,9 +195,15 @@ function Calendario() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {rsvps.map((r: any) => (
-                          <span key={r.id} className={`text-xs px-2 py-1 rounded ${r.status === "confirmed" ? "bg-brand/20 text-brand" : "bg-surface-2 text-muted-foreground"}`}>
+                          <button
+                            key={r.id}
+                            disabled={r.status === "confirmed" || confirmRsvp.isPending}
+                            onClick={() => confirmRsvp.mutate({ rsvpId: r.id, studentId: r.student_id, classId: r.class_id })}
+                            className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${r.status === "confirmed" ? "bg-brand/20 text-brand cursor-default" : "bg-surface-2 text-muted-foreground hover:bg-brand/10 hover:text-brand"}`}
+                            title={r.status === "confirmed" ? "Presença confirmada" : "Clique para confirmar presença"}
+                          >
                             {r.profiles?.full_name ?? "Aluno"} {r.status === "confirmed" ? "✓" : ""}
-                          </span>
+                          </button>
                         ))}
                       </div>
                     </div>
