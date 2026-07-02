@@ -106,6 +106,19 @@ function Aluno() {
     },
   });
 
+  const { data: todayRsvps = [] } = useQuery({
+    enabled: !!userId,
+    queryKey: ["aluno-rsvps", userId, todayIso],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("class_rsvps")
+        .select("*")
+        .eq("student_id", userId!)
+        .eq("class_date", todayIso);
+      return data ?? [];
+    },
+  });
+
   const { data: photos = [] } = useQuery({
     queryKey: ["aluno-photos"],
     queryFn: async () => {
