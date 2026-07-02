@@ -192,7 +192,31 @@ function Aluno() {
   const signupByTournament = useMemo(
     () => new Map(mySignups.map((s) => [s.tournament_id, s])),
     [mySignups],
+  const rsvpByClass = useMemo(
+    () => new Map(todayRsvps.map((r: any) => [r.class_id, r])),
+    [todayRsvps],
   );
+
+  const toggleRsvp = useMutation({
+    mutationFn: async (classId: string) => {
+      if (!userId) throw new Error("Sem sessão");
+      const existing: any = rsvpByClass.get(classId);
+      if (existing) {
+        const { error } = await (supabase as any).from("class_rsvps").delete().eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from("class_rsvps").insert({
+          student_id: userId, class_id: classId, class_date: todayIso, status: "going",
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["aluno-rsvps"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro"),
+  });
+
 
   const checkInMutation = useMutation({
     mutationFn: async (classId: string) => {
