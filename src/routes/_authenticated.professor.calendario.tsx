@@ -70,6 +70,22 @@ function Calendario() {
     },
   });
 
+  const confirmRsvp = useMutation({
+    mutationFn: async ({ rsvpId, studentId, classId }: { rsvpId: string; studentId: string; classId: string }) => {
+      const upd = await (supabase as any).from("class_rsvps").update({ status: "confirmed" }).eq("id", rsvpId);
+      if (upd.error) throw upd.error;
+      const ins = await supabase.from("attendances").insert({
+        student_id: studentId, class_id: classId, attended_on: todayIso,
+      });
+      if (ins.error && !ins.error.message.includes("duplicate")) throw ins.error;
+    },
+    onSuccess: () => {
+      toast.success("Presença confirmada");
+      queryClient.invalidateQueries({ queryKey: ["today-rsvps"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro"),
+  });
+
   const byDow: Record<number, typeof classes> = {};
   classes.forEach((c) => { (byDow[c.day_of_week] ??= []).push(c); });
 
