@@ -219,22 +219,6 @@ function Aluno() {
   });
 
 
-  const checkInMutation = useMutation({
-    mutationFn: async (classId: string) => {
-      if (!userId) throw new Error("Sem sessão");
-      const { error } = await supabase.from("attendances").insert({
-        student_id: userId,
-        class_id: classId,
-        attended_on: todayIso,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Presença confirmada");
-      queryClient.invalidateQueries({ queryKey: ["aluno-attendances"] });
-    },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro"),
-  });
 
   const signupMutation = useMutation({
     mutationFn: async (tournamentId: string) => {
