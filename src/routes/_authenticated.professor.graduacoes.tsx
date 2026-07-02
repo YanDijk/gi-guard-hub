@@ -57,23 +57,14 @@ function Graduacoes() {
 
   const createMutation = useMutation({
     mutationFn: async (payload: {
-      student_id: string;
-      from_belt: Belt;
-      from_stripes: number;
-      to_belt: Belt;
-      to_stripes: number;
-      ceremony_date: string;
-      notes?: string;
-      apply_now: boolean;
+      student_id: string; from_belt: Belt; from_stripes: number;
+      to_belt: Belt; to_stripes: number; ceremony_date: string; apply_now: boolean;
     }) => {
       const { apply_now, ...record } = payload;
       const { error } = await supabase.from("graduations").insert(record);
       if (error) throw error;
       if (apply_now) {
-        await supabase
-          .from("profiles")
-          .update({ belt: payload.to_belt, stripes: payload.to_stripes })
-          .eq("id", payload.student_id);
+        await supabase.from("profiles").update({ belt: payload.to_belt, stripes: payload.to_stripes }).eq("id", payload.student_id);
       }
     },
     onSuccess: () => {
@@ -106,9 +97,9 @@ function Graduacoes() {
       actions={
         <button
           onClick={() => setShowForm(true)}
-          className="h-9 px-4 bg-brand text-brand-foreground rounded-md text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+          className="h-9 px-3 sm:px-4 bg-brand text-brand-foreground rounded-md text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2"
         >
-          <Plus className="size-4" /> Registrar graduação
+          <Plus className="size-4" /> <span className="hidden sm:inline">Registrar graduação</span><span className="sm:hidden">Nova</span>
         </button>
       }
     >
@@ -121,53 +112,39 @@ function Graduacoes() {
         />
       )}
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-surface border border-border rounded-lg p-6">
-          <Award className="size-6 text-brand mb-3" />
-          <div className="text-3xl font-display">{upcoming.length}</div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mt-1">Cerimônias agendadas</div>
-        </div>
-        <div className="bg-surface border border-border rounded-lg p-6">
-          <div className="text-3xl font-display">{candidates.length}</div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mt-1">Candidatos elegíveis (≥16 presenças/30d)</div>
-        </div>
-        <div className="bg-surface border border-border rounded-lg p-6">
-          <div className="text-3xl font-display">{history.length}</div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mt-1">Graduações registradas</div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4 mb-6 lg:mb-8">
+        <StatCard icon={<Award className="size-6 text-brand" />} value={upcoming.length} label="Cerimônias agendadas" />
+        <StatCard value={candidates.length} label="Candidatos elegíveis (≥16 presenças/30d)" />
+        <StatCard value={history.length} label="Graduações registradas" />
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-surface border border-border rounded-lg p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <div className="bg-surface border border-border rounded-lg p-4 lg:p-6">
           <h2 className="font-display text-lg mb-4">Próximas e recentes</h2>
           {isLoading ? (
             <div className="text-muted-foreground">Carregando...</div>
           ) : graduations.length === 0 ? (
             <div className="text-sm text-muted-foreground py-6 text-center">Nenhuma graduação registrada.</div>
           ) : (
-            <div className="space-y-2 max-h-[420px] overflow-auto pr-2">
+            <div className="space-y-2 max-h-[420px] overflow-auto pr-1">
               {graduations.map((g) => {
                 const profile = g.profiles as { full_name: string; avatar_url: string | null } | null;
                 const isUpcoming = g.ceremony_date >= todayIso;
                 return (
-                  <div key={g.id} className="flex items-center gap-3 p-3 bg-surface-2 rounded-md group">
+                  <div key={g.id} className="flex items-center gap-3 p-3 bg-surface-2 rounded-md min-w-0">
                     <Avatar name={profile?.full_name ?? "Aluno"} url={profile?.avatar_url} size={36} />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate">{profile?.full_name ?? "Aluno"}</div>
-                      <div className="text-xs text-muted-foreground capitalize">
+                      <div className="text-xs text-muted-foreground capitalize truncate">
                         {g.from_belt} {g.from_stripes}° → <span className="text-brand">{g.to_belt} {g.to_stripes}°</span>
                       </div>
                     </div>
-                    <div className="text-xs text-right">
-                      <div className={isUpcoming ? "text-brand font-mono" : "text-muted-foreground font-mono"}>
-                        {new Date(g.ceremony_date).toLocaleDateString("pt-BR")}
-                      </div>
+                    <div className={`text-xs shrink-0 ${isUpcoming ? "text-brand font-mono" : "text-muted-foreground font-mono"}`}>
+                      {new Date(g.ceremony_date).toLocaleDateString("pt-BR")}
                     </div>
                     <button
-                      onClick={() => {
-                        if (confirm("Remover esta graduação?")) deleteMutation.mutate(g.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400"
+                      onClick={() => { if (confirm("Remover?")) deleteMutation.mutate(g.id); }}
+                      className="text-muted-foreground hover:text-red-400 shrink-0"
                     >
                       <Trash2 className="size-3" />
                     </button>
@@ -178,7 +155,7 @@ function Graduacoes() {
           )}
         </div>
 
-        <div className="bg-surface border border-border rounded-lg p-6">
+        <div className="bg-surface border border-border rounded-lg p-4 lg:p-6">
           <h2 className="font-display text-lg mb-4">Candidatos sugeridos</h2>
           {candidates.length === 0 ? (
             <div className="text-sm text-muted-foreground py-6 text-center">
@@ -187,10 +164,10 @@ function Graduacoes() {
           ) : (
             <div className="space-y-3">
               {candidates.map((s) => (
-                <div key={s.id} className="flex items-center gap-3">
+                <div key={s.id} className="flex items-center gap-3 min-w-0">
                   <Avatar name={s.full_name || "Aluno"} url={s.avatar_url} size={36} />
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold">{s.full_name || "(sem nome)"}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold truncate">{s.full_name || "(sem nome)"}</div>
                     <div className="text-xs text-muted-foreground">{s.att30} presenças em 30d</div>
                   </div>
                   <BeltBadge belt={s.belt} stripes={s.stripes} size="sm" />
@@ -204,23 +181,22 @@ function Graduacoes() {
   );
 }
 
+function StatCard({ icon, value, label }: { icon?: React.ReactNode; value: number; label: string }) {
+  return (
+    <div className="bg-surface border border-border rounded-lg p-4 lg:p-6">
+      {icon && <div className="mb-2 lg:mb-3">{icon}</div>}
+      <div className="text-2xl lg:text-3xl font-display">{value}</div>
+      <div className="text-[10px] lg:text-xs uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
+    </div>
+  );
+}
+
 function GraduationForm({
-  students,
-  onCancel,
-  onSubmit,
-  saving,
+  students, onCancel, onSubmit, saving,
 }: {
   students: { id: string; full_name: string; belt: Belt; stripes: number }[];
   onCancel: () => void;
-  onSubmit: (p: {
-    student_id: string;
-    from_belt: Belt;
-    from_stripes: number;
-    to_belt: Belt;
-    to_stripes: number;
-    ceremony_date: string;
-    apply_now: boolean;
-  }) => void;
+  onSubmit: (p: { student_id: string; from_belt: Belt; from_stripes: number; to_belt: Belt; to_stripes: number; ceremony_date: string; apply_now: boolean }) => void;
   saving: boolean;
 }) {
   const [studentId, setStudentId] = useState(students[0]?.id ?? "");
@@ -245,16 +221,11 @@ function GraduationForm({
         const s = students.find((s) => s.id === studentId);
         if (!s) return;
         onSubmit({
-          student_id: studentId,
-          from_belt: s.belt,
-          from_stripes: s.stripes,
-          to_belt: toBelt,
-          to_stripes: toStripes,
-          ceremony_date: date,
-          apply_now: applyNow,
+          student_id: studentId, from_belt: s.belt, from_stripes: s.stripes,
+          to_belt: toBelt, to_stripes: toStripes, ceremony_date: date, apply_now: applyNow,
         });
       }}
-      className="bg-surface border border-border rounded-lg p-6 mb-6 grid grid-cols-6 gap-3"
+      className="bg-surface border border-border rounded-lg p-4 sm:p-6 mb-6 grid grid-cols-2 sm:grid-cols-6 gap-3"
     >
       <label className="col-span-2 block">
         <span className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Aluno</span>
@@ -263,72 +234,38 @@ function GraduationForm({
           onChange={(e) => {
             setStudentId(e.target.value);
             const s = students.find((x) => x.id === e.target.value);
-            if (s) {
-              setToBelt(s.belt);
-              setToStripes(Math.min(s.stripes + 1, 4));
-            }
+            if (s) { setToBelt(s.belt); setToStripes(Math.min(s.stripes + 1, 4)); }
           }}
           className="w-full h-9 px-2 bg-background border border-border rounded text-sm"
         >
           {students.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.full_name || "(sem nome)"}
-            </option>
+            <option key={s.id} value={s.id}>{s.full_name || "(sem nome)"}</option>
           ))}
         </select>
       </label>
       <label className="block">
         <span className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Nova faixa</span>
-        <select
-          value={toBelt}
-          onChange={(e) => setToBelt(e.target.value as Belt)}
-          className="w-full h-9 px-2 bg-background border border-border rounded text-sm capitalize"
-        >
-          {BELTS.map((b) => (
-            <option key={b} value={b} className="capitalize">
-              {b}
-            </option>
-          ))}
+        <select value={toBelt} onChange={(e) => setToBelt(e.target.value as Belt)} className="w-full h-9 px-2 bg-background border border-border rounded text-sm capitalize">
+          {BELTS.map((b) => <option key={b} value={b} className="capitalize">{b}</option>)}
         </select>
       </label>
       <label className="block">
         <span className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Grau</span>
-        <select
-          value={toStripes}
-          onChange={(e) => setToStripes(Number(e.target.value))}
-          className="w-full h-9 px-2 bg-background border border-border rounded text-sm"
-        >
-          {[0, 1, 2, 3, 4].map((n) => (
-            <option key={n} value={n}>
-              {n}°
-            </option>
-          ))}
+        <select value={toStripes} onChange={(e) => setToStripes(Number(e.target.value))} className="w-full h-9 px-2 bg-background border border-border rounded text-sm">
+          {[0, 1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}°</option>)}
         </select>
       </label>
       <label className="block col-span-2">
         <span className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Data da cerimônia</span>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="w-full h-9 px-2 bg-background border border-border rounded text-sm"
-        />
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full h-9 px-2 bg-background border border-border rounded text-sm" />
       </label>
-      <label className="col-span-3 flex items-center gap-2 text-xs">
+      <label className="col-span-2 sm:col-span-3 flex items-center gap-2 text-xs">
         <input type="checkbox" checked={applyNow} onChange={(e) => setApplyNow(e.target.checked)} />
-        Já aplicar essa faixa/grau ao perfil do aluno
+        Já aplicar essa faixa/grau ao perfil
       </label>
-      <div className="col-span-3 flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className="h-9 px-4 border border-border rounded text-sm">
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          disabled={saving}
-          className="h-9 px-4 bg-brand text-brand-foreground rounded text-sm font-bold uppercase tracking-wider disabled:opacity-50"
-        >
-          Registrar
-        </button>
+      <div className="col-span-2 sm:col-span-3 flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className="h-9 px-4 border border-border rounded text-sm">Cancelar</button>
+        <button type="submit" disabled={saving} className="h-9 px-4 bg-brand text-brand-foreground rounded text-sm font-bold uppercase tracking-wider disabled:opacity-50">Registrar</button>
       </div>
     </form>
   );

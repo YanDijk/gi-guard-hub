@@ -106,6 +106,19 @@ function Aluno() {
     },
   });
 
+  const { data: todayRsvps = [] } = useQuery({
+    enabled: !!userId,
+    queryKey: ["aluno-rsvps", userId, todayIso],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("class_rsvps")
+        .select("*")
+        .eq("student_id", userId!)
+        .eq("class_date", todayIso);
+      return data ?? [];
+    },
+  });
+
   const { data: photos = [] } = useQuery({
     queryKey: ["aluno-photos"],
     queryFn: async () => {
@@ -180,23 +193,32 @@ function Aluno() {
     () => new Map(mySignups.map((s) => [s.tournament_id, s])),
     [mySignups],
   );
+  const rsvpByClass = useMemo(
+    () => new Map(todayRsvps.map((r: any) => [r.class_id, r])),
+    [todayRsvps],
+  );
 
-  const checkInMutation = useMutation({
+  const toggleRsvp = useMutation({
     mutationFn: async (classId: string) => {
       if (!userId) throw new Error("Sem sessão");
-      const { error } = await supabase.from("attendances").insert({
-        student_id: userId,
-        class_id: classId,
-        attended_on: todayIso,
-      });
-      if (error) throw error;
+      const existing: any = rsvpByClass.get(classId);
+      if (existing) {
+        const { error } = await (supabase as any).from("class_rsvps").delete().eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from("class_rsvps").insert({
+          student_id: userId, class_id: classId, class_date: todayIso, status: "going",
+        });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      toast.success("Presença confirmada");
-      queryClient.invalidateQueries({ queryKey: ["aluno-attendances"] });
+      queryClient.invalidateQueries({ queryKey: ["aluno-rsvps"] });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Erro"),
   });
+
+
 
   const signupMutation = useMutation({
     mutationFn: async (tournamentId: string) => {
@@ -311,25 +333,31 @@ function Aluno() {
             <div className="space-y-2">
               {todayClasses.map((c) => {
                 const done = attendedTodayClassIds.has(c.id);
+                const rsvp: any = rsvpByClass.get(c.id);
+                const going = !!rsvp;
                 return (
-                  <div key={c.id} className="flex items-center gap-3 p-3 bg-surface border border-border rounded-lg min-w-0">
-                    <div className="font-display text-lg text-brand w-12 shrink-0">{c.start_time.slice(0, 5)}</div>
+                  <div key={c.id} className="flex items-center gap-2 p-3 bg-surface border border-border rounded-lg min-w-0">
+                    <div className="font-display text-base sm:text-lg text-brand w-12 shrink-0">{c.start_time.slice(0, 5)}</div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate">{c.name}</div>
-                      <div className="text-xs text-muted-foreground">{c.level} · {c.duration_min}min</div>
+                      <div className="text-xs text-muted-foreground truncate">{c.level} · {c.duration_min}min</div>
                     </div>
-                    <button
-                      onClick={() => !done && checkInMutation.mutate(c.id)}
-                      disabled={done || checkInMutation.isPending}
-                      className={`h-9 px-3 rounded-md text-xs font-bold uppercase tracking-wider flex items-center gap-1 shrink-0 ${
-                        done
-                          ? "bg-brand/20 text-brand cursor-default"
-                          : "bg-brand text-brand-foreground hover:bg-brand/90"
-                      }`}
-                    >
-                      <CheckCircle2 className="size-4" />
-                      <span>{done ? "Presente" : "Check-in"}</span>
-                    </button>
+                    {done ? (
+                      <span className="h-9 px-3 rounded-md text-xs font-bold uppercase tracking-wider flex items-center gap-1 shrink-0 bg-brand/20 text-brand">
+                        <CheckCircle2 className="size-4" /> Presente
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => toggleRsvp.mutate(c.id)}
+                        disabled={toggleRsvp.isPending}
+                        className={`h-9 px-3 rounded-md text-xs font-bold uppercase tracking-wider flex items-center gap-1 shrink-0 ${
+                          going ? "bg-brand/20 text-brand" : "bg-brand text-brand-foreground hover:bg-brand/90"
+                        }`}
+                      >
+                        <CheckCircle2 className="size-4" />
+                        <span>{going ? "Vou treinar" : "Confirmar"}</span>
+                      </button>
+                    )}
                   </div>
                 );
               })}
